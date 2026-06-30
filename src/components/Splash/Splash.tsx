@@ -1,8 +1,22 @@
 import { motion } from 'framer-motion'
+import { EcgLine } from '../ui/EcgLine'
 import styles from './Splash.module.css'
 
 type SplashProps = {
   onStart: () => void
+}
+
+const stagger = {
+  animate: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
+}
+
+const item = {
+  initial: { opacity: 0, y: 20 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+  },
 }
 
 export function Splash({ onStart }: SplashProps) {
@@ -11,28 +25,46 @@ export function Splash({ onStart }: SplashProps) {
       <div className={styles.bg} aria-hidden="true">
         <img src={`${import.meta.env.BASE_URL}assets/tablero.png`} alt="" className={styles.bgImage} />
         <div className={styles.bgOverlay} />
+        <div className={styles.grid} />
       </div>
 
-      <motion.div
-        className={styles.content}
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <span className={styles.badge}>SONOCRÍTICO · UCI</span>
-        <h1 className={styles.title}>Guardia Nocturna en UCI</h1>
-        <p className={styles.subtitle}>
-          Juego de mesa digital. Domina las 8 categorías clínicas antes que caigan tus vidas.
-        </p>
+      <motion.div className={styles.content} variants={stagger} initial="initial" animate="animate">
+        <motion.div className={styles.ecgWrap} variants={item}>
+          <EcgLine />
+        </motion.div>
+
+        <motion.span className={styles.badge} variants={item}>
+          SONOCRÍTICO · Medicina Crítica
+        </motion.span>
+
+        <motion.h1 className={styles.title} variants={item}>
+          Guardia
+          <span className={styles.titleAccent}>Nocturna en UCI</span>
+        </motion.h1>
+
+        <motion.p className={styles.subtitle} variants={item}>
+          Domina las 8 categorías clínicas. Sobrevive la guardia. Gana el tablero.
+        </motion.p>
+
+        <motion.div className={styles.features} variants={item}>
+          <span className={styles.chip}>2–4 jugadores</span>
+          <span className={styles.chip}>Hot-seat</span>
+          <span className={styles.chip}>Offline PWA</span>
+        </motion.div>
+
         <motion.button
           type="button"
           className={styles.cta}
+          variants={item}
           onClick={onStart}
           whileTap={{ scale: 0.97 }}
         >
           Entrar a la guardia
         </motion.button>
-        <p className={styles.credit}>Hot-seat · 2–4 jugadores · Sin conexión</p>
+
+        <motion.p className={styles.credit} variants={item}>
+          Juego de mesa digital · v1
+        </motion.p>
       </motion.div>
     </div>
   )

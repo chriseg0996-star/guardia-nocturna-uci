@@ -1,0 +1,96 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 108px;
+  max-width: 130px;
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  transition:
+    border-color var(--dur-normal),
+    box-shadow var(--dur-normal),
+    transform var(--dur-fast);
+}
+
+.active {
+  border-color: var(--accent, var(--cy));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent, var(--cy)) 40%, transparent), var(--glow-cy);
+  transform: scale(1.02);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.name {
+  font-size: 0.68rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--txt);
+}
+
+.lives {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  line-height: 1;
+}
+
+.heart {
+  font-size: 0.55rem;
+  opacity: 0.25;
+  transition: opacity 0.2s;
+}
+
+.heartOn {
+  opacity: 1;
+  filter: drop-shadow(0 0 3px var(--r));
+}
+
+.stamps {
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.stamp {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  border: 1px solid var(--line);
+  background: rgba(7, 13, 24, 0.6);
+  font-size: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.35;
+}
+
+.stampOn {
+  opacity: 1;
+  border-color: var(--gold);
+  box-shadow: 0 0 6px rgba(242, 193, 78, 0.4);
+}

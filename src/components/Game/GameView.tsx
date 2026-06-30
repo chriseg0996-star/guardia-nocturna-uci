@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { Board } from '../Board/Board'
 import { Hud } from '../Hud/Hud'
+import { PlayerPanel } from '../Hud/PlayerPanel'
 import { computeDiceRoll, useGameStore } from '../../game/store'
+import { LandModal } from './LandModal'
 import styles from './GameView.module.css'
 
 const ROLL_MS = 550
-const STEP_MS = 320
+const STEP_MS = 300
+
+const PHASE_HINT: Record<string, string> = {
+  roll: '◉ Toca el dado para avanzar',
+  rolling: '⟳ Calculando pasos…',
+  moving: '→ Avanzando por el tablero',
+  landed: '✦ Resuelve la casilla',
+}
 
 export function GameView() {
   const players = useGameStore((s) => s.players)
@@ -18,7 +27,6 @@ export function GameView() {
   const animPlayerId = useGameStore((s) => s.animPlayerId)
   const landedTileIndex = useGameStore((s) => s.landedTileIndex)
   const lapMessage = useGameStore((s) => s.lapMessage)
-  const lastLandedLabel = useGameStore((s) => s.lastLandedLabel)
   const resetToSetup = useGameStore((s) => s.resetToSetup)
   const beginRoll = useGameStore((s) => s.beginRoll)
   const setDiceRolling = useGameStore((s) => s.setDiceRolling)
@@ -52,9 +60,7 @@ export function GameView() {
     rollTimer.current = setTimeout(() => {
       const value = computeDiceRoll()
       setDiceRolling(value)
-      setTimeout(() => {
-        beginMove()
-      }, 200)
+      setTimeout(() => beginMove(), 220)
     }, ROLL_MS)
   }, [turnPhase, beginRoll, setDiceRolling, beginMove])
 
@@ -68,7 +74,7 @@ export function GameView() {
       const hasMore = stepMove()
       if (!hasMore) {
         if (stepTimer.current) clearInterval(stepTimer.current)
-        setTimeout(() => finishMove(), STEP_MS * 0.6)
+        setTimeout(() => finishMove(), STEP_MS * 0.5)
       }
     }, STEP_MS)
 
@@ -77,37 +83,27 @@ export function GameView() {
     }
   }, [turnPhase, stepMove, finishMove])
 
-  const diceDisabled = turnPhase !== 'roll'
-
   return (
     <div className={styles.game}>
-      <div className={styles.topBar}>
-        <span className={styles.menuBtn} style={{ border: 'none', paddingLeft: 0 }}>
-          Guardia UCI
-        </span>
+      <header className={styles.topBar}>
+        <div className={styles.brand}>
+          <span className={styles.brandTitle}>Guardia Nocturna</span>
+          <span className={styles.brandSub}>UCI · SONOCRÍTICO</span>
+        </div>
         <button type="button" className={styles.menuBtn} onClick={resetToSetup}>
           Salir
         </button>
+      </header>
+
+      <div className={styles.playersStrip}>
+        {players
+          .filter((p) => !p.eliminated)
+          .map((p) => (
+            <PlayerPanel key={p.id} player={p} active={p.id === currentPlayer?.id} />
+          ))}
       </div>
 
-      {turnPhase === 'landed' && lastLandedLabel && (
-        <motion.div
-          className={styles.landedBanner}
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className={styles.landedTitle}>Casilla</div>
-          <div className={styles.landedText}>{lastLandedLabel}</div>
-          {lapMessage && (
-            <div className={styles.landedTitle} style={{ marginTop: 6, color: 'var(--gold)' }}>
-              {lapMessage}
-            </div>
-          )}
-          <button type="button" className={styles.continueBtn} onClick={endTurn}>
-            Siguiente turno
-          </button>
-        </motion.div>
-      )}
+      <p className={styles.phaseHint}>{PHASE_HINT[turnPhase] ?? ''}</p>
 
       <div className={styles.boardArea}>
         <Board
@@ -119,16 +115,26 @@ export function GameView() {
           center={
             <Hud
               currentPlayer={currentPlayer}
-              players={players}
               diceValue={diceValue}
               rolling={turnPhase === 'rolling'}
-              diceDisabled={diceDisabled}
+              diceDisabled={turnPhase !== 'roll'}
               lapMessage={turnPhase === 'moving' ? lapMessage : null}
               onRoll={handleRoll}
             />
           }
         />
       </div>
+
+      <AnimatePresence>
+        {turnPhase === 'landed' && landedTileIndex !== null && (
+          <LandModal
+            tileIndex={landedTileIndex}
+            board={board}
+            lapMessage={lapMessage}
+            onContinue={endTurn}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

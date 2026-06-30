@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { DEFAULT_PLAYER_NAMES, PLAYER_COLORS } from '../../data/categories'
 import { MAX_PLAYERS, MIN_PLAYERS } from '../../game/engine'
 import { useGameStore } from '../../game/store'
+import { EcgLine } from '../ui/EcgLine'
 import styles from './Setup.module.css'
 
 const COUNT_OPTIONS = [2, 3, 4] as const
@@ -18,12 +19,16 @@ export function Setup() {
 
   return (
     <div className={styles.setup}>
+      <div className={styles.ecg}>
+        <EcgLine />
+      </div>
+
       <header className={styles.header}>
         <button type="button" className={styles.back} onClick={() => setScreen('splash')}>
           ← Volver
         </button>
         <h1 className={styles.title}>Nueva partida</h1>
-        <p className={styles.subtitle}>Configura residentes para la guardia nocturna</p>
+        <p className={styles.subtitle}>Residentes en guardia — elige tu equipo</p>
       </header>
 
       <section className={styles.section} aria-labelledby="players-heading">
@@ -41,6 +46,7 @@ export function Setup() {
               aria-pressed={playerCount === n}
             >
               {n}
+              <span className={styles.countLabel}>JUGADORES</span>
             </motion.button>
           ))}
         </div>
@@ -48,16 +54,18 @@ export function Setup() {
 
       <section className={styles.section} aria-labelledby="names-heading">
         <h2 id="names-heading" className={styles.sectionTitle}>
-          Nombres
+          Equipo
         </h2>
         <div className={styles.playerList}>
           {Array.from({ length: playerCount }, (_, i) => (
             <div key={i} className={styles.playerRow}>
               <span
                 className={styles.playerDot}
-                style={{ color: PLAYER_COLORS[i], backgroundColor: PLAYER_COLORS[i] }}
+                style={{ backgroundColor: PLAYER_COLORS[i], color: PLAYER_COLORS[i] }}
                 aria-hidden="true"
-              />
+              >
+                {i + 1}
+              </span>
               <input
                 className={styles.playerInput}
                 type="text"
@@ -75,12 +83,12 @@ export function Setup() {
 
       <section className={styles.section} aria-labelledby="rules-heading">
         <h2 id="rules-heading" className={styles.sectionTitle}>
-          Reglas rápidas
+          Objetivo
         </h2>
         <ul className={styles.rules}>
-          <li>10 vidas por jugador · 8 sellos (categorías)</li>
-          <li>Tira el dado, avanza y resuelve la casilla</li>
-          <li>Victoria: dominar las 8 categorías o ser el último con vidas</li>
+          <li>10 vidas · 8 sellos de categorías clínicas</li>
+          <li>Tira el dado, avanza y resuelve cada casilla</li>
+          <li>Gana dominando las 8 categorías o siendo el último en pie</li>
         </ul>
       </section>
 
@@ -91,7 +99,7 @@ export function Setup() {
         onClick={startGame}
         whileTap={canStart ? { scale: 0.98 } : undefined}
       >
-        Iniciar guardia
+        🌙 Iniciar guardia
       </motion.button>
     </div>
   )

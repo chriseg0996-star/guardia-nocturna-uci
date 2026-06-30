@@ -25,12 +25,16 @@ export function Board({
 }: BoardProps) {
   return (
     <div className={styles.boardWrap}>
-      <div className={styles.board} role="grid" aria-label="Tablero UCI">
+      <span className={styles.cornerBadge} aria-hidden="true">
+        UCI · 28
+      </span>
+      <div className={styles.board} role="grid" aria-label="Tablero perimetral UCI">
         {tiles.map((tile) => {
           const { row, col } = tileToGrid(tile.index)
           return (
             <div
               key={tile.index}
+              className={styles.tileCell}
               style={{ gridRow: row + 1, gridColumn: col + 1 }}
             >
               <Tile tile={tile} active={highlightIndex === tile.index} />

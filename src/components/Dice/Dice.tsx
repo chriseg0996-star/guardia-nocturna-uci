@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import styles from './Dice.module.css'
 
@@ -8,47 +9,73 @@ type DiceProps = {
   onRoll: () => void
 }
 
-const FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅']
+/** Dot patterns for faces 1–6 (3×3 grid, index 0–8) */
+const PATTERNS: Record<number, number[]> = {
+  1: [4],
+  2: [0, 8],
+  3: [0, 4, 8],
+  4: [0, 2, 6, 8],
+  5: [0, 2, 4, 6, 8],
+  6: [0, 2, 3, 5, 6, 8],
+}
+
+function DiceFace({ value }: { value: number }) {
+  const on = new Set(PATTERNS[value] ?? [])
+  return (
+    <div className={styles.dots}>
+      {Array.from({ length: 9 }, (_, i) => (
+        <span key={i} className={`${styles.dot} ${on.has(i) ? styles.dotOn : ''}`} />
+      ))}
+    </div>
+  )
+}
 
 export function Dice({ value, rolling, disabled, onRoll }: DiceProps) {
   const reduceMotion = useReducedMotion()
+  const [spinFace, setSpinFace] = useState(1)
+  const display = value ?? spinFace
+
+  useEffect(() => {
+    if (!rolling) return
+    const id = setInterval(() => setSpinFace((f) => (f % 6) + 1), 80)
+    return () => clearInterval(id)
+  }, [rolling])
 
   const handleClick = () => {
     if (disabled || rolling) return
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(12)
+      navigator.vibrate([10, 30, 15])
     }
     onRoll()
   }
 
-  const display =
-    rolling && !reduceMotion
-      ? '?'
-      : value !== null
-        ? reduceMotion
-          ? String(value)
-          : FACES[value - 1]
-        : '·'
-
   return (
     <div className={styles.wrap}>
-      <motion.button
+      <button
         type="button"
-        className={`${styles.dice} ${rolling ? styles.diceRolling : styles.diceIdle}`}
+        className={styles.btn}
         disabled={disabled || rolling}
         onClick={handleClick}
-        animate={
-          rolling && !reduceMotion
-            ? { rotate: [0, 18, -18, 12, -8, 0], scale: [1, 1.08, 1] }
-            : { rotate: 0, scale: 1 }
-        }
-        transition={{ duration: 0.55, ease: 'easeInOut' }}
         aria-label={rolling ? 'Tirando dado' : value ? `Dado: ${value}` : 'Tirar dado'}
       >
-        {display}
-      </motion.button>
-      <span className={styles.label}>
-        {rolling ? 'Tirando…' : disabled ? 'Espera' : 'Toca para tirar'}
+        <div className={styles.scene}>
+          <motion.div
+            className={`${styles.cube} ${rolling && !reduceMotion ? styles.rolling : ''}`}
+            animate={
+              !rolling && value
+                ? { rotateX: 0, rotateY: 0, scale: [1, 1.08, 1] }
+                : undefined
+            }
+            transition={{ duration: 0.35 }}
+          >
+            <div className={styles.face}>
+              <DiceFace value={rolling ? spinFace : display} />
+            </div>
+          </motion.div>
+        </div>
+      </button>
+      <span className={`${styles.label} ${!disabled && !rolling ? styles.labelReady : ''}`}>
+        {rolling ? '⟳ Tirando…' : disabled ? 'Espera turno' : 'Toca el dado'}
       </span>
     </div>
   )

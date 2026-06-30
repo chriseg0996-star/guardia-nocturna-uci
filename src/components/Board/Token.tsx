@@ -7,29 +7,30 @@ type TokenProps = {
   player: Player
   offsetIndex: number
   totalAtTile: number
+  isMoving: boolean
 }
 
-export function Token({ player, offsetIndex, totalAtTile }: TokenProps) {
+export function Token({ player, offsetIndex, totalAtTile, isMoving }: TokenProps) {
   const angle = (offsetIndex / Math.max(totalAtTile, 1)) * Math.PI * 2
-  const r = totalAtTile > 1 ? 6 : 0
+  const r = totalAtTile > 1 ? 7 : 0
   const ox = Math.cos(angle) * r
   const oy = Math.sin(angle) * r
 
   return (
     <motion.div
-      className={styles.token}
+      className={`${styles.token} ${isMoving ? styles.moving : ''}`}
       style={{
         backgroundColor: player.color,
-        boxShadow: `0 0 8px ${player.color}`,
+        boxShadow: `0 0 14px ${player.color}, 0 2px 8px rgba(0,0,0,0.4)`,
+        color: player.color,
         marginLeft: ox,
         marginTop: oy,
       }}
       layout
       initial={false}
-      animate={{ scale: 1 }}
-      transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+      animate={{ scale: isMoving ? 1.12 : 1 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 22 }}
       title={player.name}
-      aria-label={`Ficha de ${player.name}`}
     >
       <span className={styles.initial}>{player.name.charAt(0).toUpperCase()}</span>
     </motion.div>
@@ -42,7 +43,10 @@ type TokenLayerProps = {
   animPlayerId: Player['id'] | null
 }
 
-export function groupPlayersByTile(players: Player[], positionOverride?: Map<number, number>): Map<number, Player[]> {
+export function groupPlayersByTile(
+  players: Player[],
+  positionOverride?: Map<number, number>,
+): Map<number, Player[]> {
   const map = new Map<number, Player[]>()
   for (const p of players) {
     if (p.eliminated) continue
@@ -71,6 +75,7 @@ export function TokenLayer({ players, animPosition, animPlayerId }: TokenLayerPr
           const cellH = 100 / 8
           const left = pos.col * cellW + cellW / 2
           const top = pos.row * cellH + cellH / 2
+          const isMoving = player.id === animPlayerId && animPosition !== null
 
           return (
             <motion.div
@@ -81,12 +86,17 @@ export function TokenLayer({ players, animPosition, animPlayerId }: TokenLayerPr
               animate={{ left: `${left}%`, top: `${top}%` }}
               transition={{
                 type: 'spring',
-                stiffness: 320,
-                damping: 26,
-                mass: 0.8,
+                stiffness: isMoving ? 280 : 320,
+                damping: isMoving ? 24 : 26,
+                mass: 0.75,
               }}
             >
-              <Token player={player} offsetIndex={i} totalAtTile={tilePlayers.length} />
+              <Token
+                player={player}
+                offsetIndex={i}
+                totalAtTile={tilePlayers.length}
+                isMoving={isMoving}
+              />
             </motion.div>
           )
         }),

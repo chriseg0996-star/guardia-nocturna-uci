@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { getCategory } from '../../data/categories'
 import type { Tile as TileData } from '../../game/board'
 import styles from './Tile.module.css'
@@ -5,15 +6,23 @@ import styles from './Tile.module.css'
 type TileProps = {
   tile: TileData
   active?: boolean
-  showIndex?: boolean
 }
 
-export function Tile({ tile, active = false, showIndex = false }: TileProps) {
+export function Tile({ tile, active = false }: TileProps) {
   const category = tile.categoryId ? getCategory(tile.categoryId) : undefined
+
+  const cornerClass =
+    tile.corner === 'go'
+      ? styles.cornerGo
+      : tile.corner === 'codigo_azul'
+        ? styles.cornerCode
+        : ''
 
   const className = [
     styles.tile,
+    tile.type === 'categoria' ? styles.categoria : '',
     tile.type === 'especial' ? styles.corner : '',
+    cornerClass,
     tile.type === 'estrella' ? styles.estrella : '',
     active ? styles.tileActive : '',
   ]
@@ -36,15 +45,12 @@ export function Tile({ tile, active = false, showIndex = false }: TileProps) {
   const label =
     tile.type === 'categoria' ? (category?.shortName ?? tile.label) : tile.label
 
-  const accent = category?.color
+  const style: CSSProperties | undefined =
+    category && tile.type === 'categoria' ? { '--accent': category.color } as CSSProperties : undefined
 
   return (
-    <div
-      className={className}
-      style={accent && tile.type === 'categoria' ? { borderColor: accent } : undefined}
-      title={category?.name ?? tile.label}
-    >
-      {showIndex && <span className={styles.index}>{tile.index}</span>}
+    <div className={className} style={style} title={category?.name ?? tile.label}>
+      <span className={styles.shine} aria-hidden="true" />
       <span className={styles.icon} aria-hidden="true">
         {icon}
       </span>

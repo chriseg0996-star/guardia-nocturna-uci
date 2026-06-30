@@ -10,28 +10,34 @@
   --r: #ff5470;
   --gold: #f2c14e;
 
-  /* Player colors */
   --p1: #3da9fc;
   --p2: #f08a3c;
   --p3: #3fb950;
   --p4: #a371f7;
 
-  /* Typography */
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* Layout */
   --touch-min: 44px;
-  --radius: 12px;
-  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
-  /* Motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --dur-fast: 150ms;
-  --dur-normal: 280ms;
+  --dur-normal: 320ms;
+
+  /* Glow & depth */
+  --glow-cy: 0 0 24px rgba(52, 211, 238, 0.45);
+  --glow-gold: 0 0 20px rgba(242, 193, 78, 0.35);
+  --glow-r: 0 0 18px rgba(255, 84, 112, 0.4);
+  --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --glass: rgba(19, 32, 58, 0.72);
+  --glass-border: rgba(52, 211, 238, 0.18);
 }
 
 @media (prefers-reduced-motion: reduce) {

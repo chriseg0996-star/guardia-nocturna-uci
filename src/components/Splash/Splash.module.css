@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: flex-end;
   min-height: 100%;
-  padding: calc(var(--safe-top) + 24px) 20px calc(var(--safe-bottom) + 32px);
+  padding: calc(var(--safe-top) + 20px) 20px calc(var(--safe-bottom) + 28px);
   overflow: hidden;
 }
 
@@ -19,19 +19,28 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.35;
-  filter: saturate(0.85) brightness(0.7);
+  opacity: 0.28;
+  filter: saturate(1.1) contrast(1.05);
+  transform: scale(1.05);
 }
 
 .bgOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(7, 13, 24, 0.2) 0%,
-    rgba(7, 13, 24, 0.75) 45%,
-    rgba(7, 13, 24, 0.95) 100%
-  );
+  background:
+    linear-gradient(180deg, rgba(7, 13, 24, 0.3) 0%, rgba(7, 13, 24, 0.88) 55%, rgba(7, 13, 24, 0.98) 100%),
+    radial-gradient(ellipse 80% 50% at 50% 20%, rgba(52, 211, 238, 0.15) 0%, transparent 60%);
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(38, 64, 95, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(38, 64, 95, 0.2) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 70%);
+  pointer-events: none;
 }
 
 .content {
@@ -42,56 +51,119 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   text-align: center;
 }
 
 .badge {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--cy);
-  border: 1px solid rgba(52, 211, 238, 0.35);
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 999px;
-  background: rgba(19, 32, 58, 0.6);
+  background: rgba(19, 32, 58, 0.75);
+  border: 1px solid rgba(52, 211, 238, 0.35);
+  box-shadow: var(--glow-cy);
+  backdrop-filter: blur(8px);
 }
 
 .title {
-  font-size: clamp(1.75rem, 7vw, 2.25rem);
+  font-size: clamp(2rem, 8.5vw, 2.75rem);
+  font-weight: 700;
   color: var(--txt);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-shadow: 0 0 40px rgba(52, 211, 238, 0.25);
+}
+
+.titleAccent {
+  display: block;
+  background: linear-gradient(90deg, var(--cy), var(--g));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .subtitle {
   font-size: 0.95rem;
   color: var(--fd);
-  max-width: 32ch;
+  max-width: 30ch;
+  line-height: 1.55;
+}
+
+.features {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.chip {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--fd);
+  background: rgba(7, 13, 24, 0.5);
 }
 
 .cta {
   width: 100%;
-  min-height: var(--touch-min);
-  margin-top: 8px;
-  padding: 14px 24px;
+  min-height: calc(var(--touch-min) + 6px);
+  margin-top: 10px;
+  padding: 16px 24px;
   border-radius: var(--radius);
-  background: linear-gradient(135deg, rgba(52, 211, 238, 0.2), rgba(61, 169, 252, 0.15));
-  border: 1px solid rgba(52, 211, 238, 0.5);
-  color: var(--cy);
+  background: linear-gradient(135deg, rgba(52, 211, 238, 0.35), rgba(61, 169, 252, 0.2));
+  border: 1px solid rgba(52, 211, 238, 0.6);
+  color: var(--txt);
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: var(--glow-cy), 0 8px 24px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
 }
 
-.cta:active {
-  transform: scale(0.98);
+.cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%);
+  transform: translateX(-100%);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta::after {
+    animation: none;
+  }
 }
 
 .credit {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--fd);
-  opacity: 0.7;
+  opacity: 0.65;
+}
+
+.ecgWrap {
+  width: 100%;
+  max-width: 280px;
+  margin-bottom: 4px;
 }
