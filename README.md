@@ -93,8 +93,7 @@ src/
 ## Fases
 
 - **P0** ✓ Scaffold, PWA, tokens, Setup
-- **P1** Tablero perimetral, dado, fichas animadas
-- **P2** Modales pregunta/evento, HUD vidas/sellos
+- **P1** ✓ Tablero perimetral, dado, fichas animadas, detección de vuelta
 - **P3** Victoria, settings, persistencia completa
 - **P4** Pulido móvil, haptics, sonido, deploy
 

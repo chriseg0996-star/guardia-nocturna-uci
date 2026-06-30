@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import styles from './App.module.css'
-import { GamePlaceholder } from './components/GamePlaceholder/GamePlaceholder'
+import { GameView } from './components/Game/GameView'
 import { Setup } from './components/Setup/Setup'
 import { Splash } from './components/Splash/Splash'
 import { useGameStore } from './game/store'
@@ -54,7 +54,7 @@ export default function App() {
             transition={{ duration: 0.28 }}
             style={{ height: '100%' }}
           >
-            <GamePlaceholder />
+            <GameView />
           </motion.div>
         )}
       </AnimatePresence>

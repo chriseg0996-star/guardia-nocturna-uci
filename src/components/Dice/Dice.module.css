@@ -1,0 +1,45 @@
+.dice {
+  width: clamp(52px, 14vw, 64px);
+  height: clamp(52px, 14vw, 64px);
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--line);
+  background: linear-gradient(145deg, #1a2d4d, var(--panel));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  font-weight: 700;
+  color: var(--txt);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.dice:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.diceIdle {
+  border-color: rgba(52, 211, 238, 0.45);
+  cursor: pointer;
+}
+
+.diceRolling {
+  border-color: var(--gold);
+}
+
+.label {
+  font-size: 0.65rem;
+  color: var(--fd);
+  text-align: center;
+  margin-top: 4px;
+}
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}

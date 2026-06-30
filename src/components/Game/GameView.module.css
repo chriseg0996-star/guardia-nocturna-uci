@@ -1,0 +1,68 @@
+.game {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: calc(var(--safe-top) + 8px) 10px calc(var(--safe-bottom) + 10px);
+  gap: 8px;
+  overflow: hidden;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.menuBtn {
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  color: var(--fd);
+  font-size: 0.8rem;
+}
+
+.landedBanner {
+  flex-shrink: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(52, 211, 238, 0.35);
+  background: rgba(52, 211, 238, 0.08);
+  text-align: center;
+}
+
+.landedTitle {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fd);
+}
+
+.landedText {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--cy);
+  margin-top: 2px;
+}
+
+.continueBtn {
+  width: 100%;
+  min-height: var(--touch-min);
+  margin-top: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--g);
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--g);
+  font-weight: 600;
+}
+
+.boardArea {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

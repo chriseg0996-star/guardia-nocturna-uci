@@ -1,0 +1,24 @@
+.tokenWrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  pointer-events: none;
+}
+
+.token {
+  width: clamp(18px, 5vw, 24px);
+  height: clamp(18px, 5vw, 24px);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.initial {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
