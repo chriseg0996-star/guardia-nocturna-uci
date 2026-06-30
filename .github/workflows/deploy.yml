@@ -30,6 +30,7 @@ jobs:
       - run: npm run build
         env:
           VITE_BASE_PATH: /guardia-nocturna-uci/
+          VITE_SOCKET_URL: ${{ secrets.VITE_SOCKET_URL }}
 
       - uses: actions/upload-pages-artifact@v3
         with:

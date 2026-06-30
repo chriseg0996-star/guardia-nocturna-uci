@@ -1,0 +1,14 @@
+# Render.com — Web Service (repo root)
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: guardia-nocturna-server
+    runtime: node
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    healthCheckPath: /
+    envVars:
+      - key: CLIENT_ORIGIN
+        value: https://chriseg0996-star.github.io

@@ -22,12 +22,27 @@ import {
 } from './gameSession.js'
 
 const PORT = Number(process.env.PORT ?? 3001)
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? 'http://localhost:5173'
+const CLIENT_ORIGINS = (process.env.CLIENT_ORIGIN ?? 'http://localhost:5173')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean)
 
-const httpServer = createServer()
+const corsOrigins = [
+  ...new Set([
+    ...CLIENT_ORIGINS,
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:4173',
+  ]),
+]
+
+const httpServer = createServer((_req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' })
+  res.end('Guardia Nocturna server OK')
+})
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: {
-    origin: [CLIENT_ORIGIN, 'http://localhost:4173'],
+    origin: corsOrigins,
     methods: ['GET', 'POST'],
   },
 })
