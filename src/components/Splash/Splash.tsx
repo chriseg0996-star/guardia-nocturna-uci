@@ -34,7 +34,7 @@ export function Splash({ onStart }: SplashProps) {
         </motion.div>
 
         <motion.span className={styles.badge} variants={item}>
-          SONOCRÍTICO · Medicina Crítica
+          Medicina Crítica
         </motion.span>
 
         <motion.h1 className={styles.title} variants={item}>

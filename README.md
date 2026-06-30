@@ -7,7 +7,7 @@ Juego de mesa digital para móvil, estilo Monopoly, temático de Medicina Críti
 - Vite + React + TypeScript (strict)
 - Zustand (estado + persistencia localStorage)
 - Framer Motion (animaciones)
-- CSS variables (design system SONOCRÍTICO) + CSS Modules
+- CSS variables (design system clínico) + CSS Modules
 - vite-plugin-pwa
 - Vitest (tests del engine)
 
@@ -94,9 +94,10 @@ src/
 
 - **P0** ✓ Scaffold, PWA, tokens, Setup
 - **P1** ✓ Tablero perimetral, dado, fichas animadas, detección de vuelta
+- **P2** ✓ Modales pregunta/evento/esquina, timer, sellos y vidas en juego
 - **P3** Victoria, settings, persistencia completa
 - **P4** Pulido móvil, haptics, sonido, deploy
 
 ## Licencia
 
-Proyecto educativo — SONOCRÍTICO / Medicina Crítica.
+Proyecto educativo — Medicina Crítica / UCI.

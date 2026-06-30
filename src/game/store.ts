@@ -1,11 +1,16 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { Card, EventCard } from '../data/types'
+import { pickEvent } from '../data/events'
+import { pickQuestion } from '../data/questions'
 import { DEFAULT_PLAYER_NAMES, PLAYER_COLORS } from '../data/categories'
 import {
   advancePosition,
   applyLifeChange,
+  checkWinners,
   createPlayer,
   DEFAULT_SETTINGS,
+  judgeQuestion,
   MAX_PLAYERS,
   MIN_PLAYERS,
   rollDice,
@@ -14,10 +19,18 @@ import {
   type PlayerId,
 } from './engine'
 import { generateBoard, getTile, type Tile } from './board'
+import {
+  applyCornerEffect,
+  applyEventEffect,
+  applyQuestionOutcome,
+  syncElimination,
+} from './resolution'
 
 export type AppScreen = 'splash' | 'setup' | 'game'
 
-export type TurnPhase = 'roll' | 'rolling' | 'moving' | 'landed'
+export type TurnPhase = 'roll' | 'rolling' | 'moving' | 'resolving'
+
+export type ResolveKind = 'question' | 'event' | 'corner'
 
 type GameStore = {
   screen: AppScreen
@@ -28,6 +41,7 @@ type GameStore = {
   settings: GameSettings
   currentPlayerIndex: number
   gameStarted: boolean
+  winners: Player[]
 
   turnPhase: TurnPhase
   diceValue: number | null
@@ -36,7 +50,14 @@ type GameStore = {
   animPlayerId: PlayerId | null
   landedTileIndex: number | null
   lapMessage: string | null
-  lastLandedLabel: string | null
+  resolveKind: ResolveKind | null
+  activeQuestion: Card | null
+  activeCategoryId: number | null
+  activeEvent: EventCard | null
+  cornerKey: 'go' | 'descanso' | 'codigo_azul' | 'guardia' | null
+  usedQuestionIds: Record<number, number[]>
+  usedEventIds: number[]
+  lastFeedback: string | null
 
   setScreen: (screen: AppScreen) => void
   setPlayerCount: (count: number) => void
@@ -49,7 +70,10 @@ type GameStore = {
   beginMove: () => void
   stepMove: () => boolean
   finishMove: () => void
-  endTurn: () => void
+  submitQuestion: (selectedOption?: number, manualCorrect?: boolean, timedOut?: boolean) => void
+  dismissEvent: () => void
+  dismissCorner: () => void
+  clearFeedback: () => void
 }
 
 function clampPlayerCount(count: number): number {
@@ -74,6 +98,10 @@ function nextActivePlayerIndex(players: Player[], from: number): number {
   return from
 }
 
+function detectWinners(players: Player[], settings: GameSettings): Player[] {
+  return checkWinners(players, settings)
+}
+
 const initialTurnState = {
   turnPhase: 'roll' as TurnPhase,
   diceValue: null as number | null,
@@ -82,7 +110,44 @@ const initialTurnState = {
   animPlayerId: null as PlayerId | null,
   landedTileIndex: null as number | null,
   lapMessage: null as string | null,
-  lastLandedLabel: null as string | null,
+  resolveKind: null as ResolveKind | null,
+  activeQuestion: null as Card | null,
+  activeCategoryId: null as number | null,
+  activeEvent: null as EventCard | null,
+  cornerKey: null as 'go' | 'descanso' | 'codigo_azul' | 'guardia' | null,
+  usedQuestionIds: {} as Record<number, number[]>,
+  usedEventIds: [] as number[],
+  lastFeedback: null as string | null,
+  winners: [] as Player[],
+}
+
+function endTurnState(get: () => GameStore, set: (partial: Partial<GameStore>) => void) {
+  const { currentPlayerIndex, players, settings } = get()
+  const winners = detectWinners(players, settings)
+  if (winners.length > 0) {
+    set({
+      winners,
+      turnPhase: 'resolving',
+      resolveKind: null,
+      activeQuestion: null,
+      activeEvent: null,
+      cornerKey: null,
+    })
+    return
+  }
+  const next = nextActivePlayerIndex(players, currentPlayerIndex)
+  set({
+    currentPlayerIndex: next,
+    turnPhase: 'roll',
+    diceValue: null,
+    landedTileIndex: null,
+    lapMessage: null,
+    resolveKind: null,
+    activeQuestion: null,
+    activeCategoryId: null,
+    activeEvent: null,
+    cornerKey: null,
+  })
 }
 
 export const useGameStore = create<GameStore>()(
@@ -100,10 +165,7 @@ export const useGameStore = create<GameStore>()(
 
       setScreen: (screen) => set({ screen }),
 
-      setPlayerCount: (count) => {
-        const playerCount = clampPlayerCount(count)
-        set({ playerCount })
-      },
+      setPlayerCount: (count) => set({ playerCount: clampPlayerCount(count) }),
 
       setPlayerName: (index, name) => {
         const playerNames = [...get().playerNames]
@@ -113,9 +175,7 @@ export const useGameStore = create<GameStore>()(
         }
       },
 
-      updateSettings: (partial) => {
-        set({ settings: { ...get().settings, ...partial } })
-      },
+      updateSettings: (partial) => set({ settings: { ...get().settings, ...partial } }),
 
       startGame: () => {
         const { playerCount, playerNames } = get()
@@ -140,21 +200,17 @@ export const useGameStore = create<GameStore>()(
       },
 
       beginRoll: () => {
-        const { turnPhase } = get()
-        if (turnPhase !== 'roll') return
-        set({ turnPhase: 'rolling', diceValue: null, lapMessage: null })
+        if (get().turnPhase !== 'roll') return
+        set({ turnPhase: 'rolling', diceValue: null, lapMessage: null, lastFeedback: null })
       },
 
-      setDiceRolling: (value) => {
-        set({ diceValue: value, turnPhase: 'rolling' })
-      },
+      setDiceRolling: (value) => set({ diceValue: value, turnPhase: 'rolling' }),
 
       beginMove: () => {
         const { diceValue, currentPlayerIndex, players } = get()
         if (diceValue === null) return
         const player = players[currentPlayerIndex]
         if (!player || player.eliminated) return
-
         set({
           turnPhase: 'moving',
           moveStepsRemaining: diceValue,
@@ -164,67 +220,167 @@ export const useGameStore = create<GameStore>()(
       },
 
       stepMove: () => {
-        const { moveStepsRemaining, animPosition, currentPlayerIndex, players } = get()
+        const { moveStepsRemaining, animPosition } = get()
         if (moveStepsRemaining <= 0 || animPosition === null) return false
-
-        const player = players[currentPlayerIndex]
-        if (!player) return false
-
         const nextPos = (animPosition + 1) % 28
         const remaining = moveStepsRemaining - 1
-
-        set({
-          animPosition: nextPos,
-          moveStepsRemaining: remaining,
-        })
-
+        set({ animPosition: nextPos, moveStepsRemaining: remaining })
         return remaining > 0
       },
 
       finishMove: () => {
-        const { diceValue, currentPlayerIndex, players, board, animPosition } = get()
-        if (diceValue === null || animPosition === null) return
+        const { diceValue, currentPlayerIndex, players, board, usedQuestionIds, usedEventIds } = get()
+        if (diceValue === null) return
+        const player = players[currentPlayerIndex]
+        if (!player) return
+
+        const { position, completedLap } = advancePosition(player.position, diceValue)
+        const tile = getTile(position, board)
+
+        let updatedPlayers = players.map((p) => {
+          if (p.id !== player.id) return p
+          let lives = p.lives
+          if (completedLap) lives = applyLifeChange(lives, 1)
+          return syncElimination({ ...p, position, lives })
+        })
+
+        const lapMessage = completedLap ? '+1 vida · completaste la vuelta' : null
+
+        if (tile.type === 'categoria' && tile.categoryId) {
+          const used = new Set(usedQuestionIds[tile.categoryId] ?? [])
+          const picked = pickQuestion(tile.categoryId, used)
+          const q = picked?.card ?? pickQuestion(tile.categoryId, new Set())!.card
+          const qIndex = picked?.index ?? 0
+          const nextUsed = { ...usedQuestionIds }
+          const list = [...(nextUsed[tile.categoryId] ?? []), qIndex]
+          nextUsed[tile.categoryId] = list
+
+          set({
+            players: updatedPlayers,
+            turnPhase: 'resolving',
+            landedTileIndex: position,
+            lapMessage,
+            resolveKind: 'question',
+            activeQuestion: q,
+            activeCategoryId: tile.categoryId,
+            activeEvent: null,
+            cornerKey: null,
+            usedQuestionIds: nextUsed,
+            animPosition: null,
+            animPlayerId: null,
+            moveStepsRemaining: 0,
+          })
+          return
+        }
+
+        if (tile.type === 'estrella') {
+          const used = new Set(usedEventIds)
+          const { card, index } = pickEvent(used)
+          set({
+            players: updatedPlayers,
+            turnPhase: 'resolving',
+            landedTileIndex: position,
+            lapMessage,
+            resolveKind: 'event',
+            activeEvent: card,
+            activeQuestion: null,
+            activeCategoryId: null,
+            cornerKey: null,
+            usedEventIds: [...usedEventIds, index],
+            animPosition: null,
+            animPlayerId: null,
+            moveStepsRemaining: 0,
+          })
+          return
+        }
+
+        if (tile.type === 'especial' && tile.corner) {
+          set({
+            players: updatedPlayers,
+            turnPhase: 'resolving',
+            landedTileIndex: position,
+            lapMessage,
+            resolveKind: 'corner',
+            cornerKey: tile.corner,
+            activeQuestion: null,
+            activeEvent: null,
+            activeCategoryId: null,
+            animPosition: null,
+            animPlayerId: null,
+            moveStepsRemaining: 0,
+          })
+        }
+      },
+
+      submitQuestion: (selectedOption, manualCorrect, timedOut) => {
+        const { activeQuestion, activeCategoryId, currentPlayerIndex, players } = get()
+        if (!activeQuestion || !activeCategoryId) return
 
         const player = players[currentPlayerIndex]
         if (!player) return
 
-        const startPos = player.position
-        const { position, completedLap } = advancePosition(startPos, diceValue)
-        const tile = getTile(position, board)
+        const correct = timedOut
+          ? false
+          : judgeQuestion(activeQuestion, selectedOption, manualCorrect)
 
-        const updatedPlayers = players.map((p) => {
-          if (p.id !== player.id) return p
-          let lives = p.lives
-          if (completedLap) {
-            lives = applyLifeChange(lives, 1)
-          }
-          return { ...p, position, lives }
-        })
+        const { player: updated, gainedStamp } = applyQuestionOutcome(
+          player,
+          activeCategoryId,
+          correct,
+        )
 
-        set({
-          players: updatedPlayers,
-          turnPhase: 'landed',
-          landedTileIndex: position,
-          lastLandedLabel: tile.label,
-          lapMessage: completedLap ? '+1 vida · Pase de visita' : null,
-          animPosition: null,
-          animPlayerId: null,
-          moveStepsRemaining: 0,
-        })
+        const feedback = timedOut
+          ? '⏱ Tiempo agotado — −1 vida'
+          : correct
+            ? gainedStamp
+              ? '✓ Correcto — ¡sello ganado!'
+              : '✓ Correcto — ya tenías este sello'
+            : '✗ Incorrecto — −1 vida'
+
+        const nextPlayers = players.map((p) => (p.id === player.id ? updated : p))
+        set({ players: nextPlayers, lastFeedback: feedback })
+        endTurnState(get, set)
       },
 
-      endTurn: () => {
-        const { currentPlayerIndex, players } = get()
-        const next = nextActivePlayerIndex(players, currentPlayerIndex)
-        set({
-          currentPlayerIndex: next,
-          turnPhase: 'roll',
-          diceValue: null,
-          landedTileIndex: null,
-          lastLandedLabel: null,
-          lapMessage: null,
-        })
+      dismissEvent: () => {
+        const { activeEvent, currentPlayerIndex, players } = get()
+        if (!activeEvent) return
+        const player = players[currentPlayerIndex]
+        if (!player) return
+
+        const { players: nextPlayers, message } = applyEventEffect(
+          activeEvent,
+          player.id,
+          players,
+        )
+        set({ players: nextPlayers, lastFeedback: message })
+        endTurnState(get, set)
       },
+
+      dismissCorner: () => {
+        const { cornerKey, currentPlayerIndex, players } = get()
+        if (!cornerKey) return
+        const player = players[currentPlayerIndex]
+        if (!player) return
+
+        const { player: updated, message, endTurnOnly } = applyCornerEffect(cornerKey, player)
+        const nextPlayers = players.map((p) => (p.id === player.id ? updated : p))
+        set({ players: nextPlayers, lastFeedback: message })
+
+        if (endTurnOnly) {
+          endTurnState(get, set)
+          return
+        }
+
+        if (cornerKey === 'descanso') {
+          endTurnState(get, set)
+          return
+        }
+
+        endTurnState(get, set)
+      },
+
+      clearFeedback: () => set({ lastFeedback: null }),
     }),
     {
       name: 'guardia-nocturna-uci',
@@ -240,13 +396,20 @@ export const useGameStore = create<GameStore>()(
         turnPhase: state.turnPhase,
         diceValue: state.diceValue,
         landedTileIndex: state.landedTileIndex,
-        lastLandedLabel: state.lastLandedLabel,
+        lapMessage: state.lapMessage,
+        resolveKind: state.resolveKind,
+        activeQuestion: state.activeQuestion,
+        activeCategoryId: state.activeCategoryId,
+        activeEvent: state.activeEvent,
+        cornerKey: state.cornerKey,
+        usedQuestionIds: state.usedQuestionIds,
+        usedEventIds: state.usedEventIds,
+        winners: state.winners,
       }),
     },
   ),
 )
 
-/** Re-export for components that trigger roll with computed value */
 export function computeDiceRoll(): number {
   return rollDice()
 }
