@@ -1,50 +1,42 @@
 .panel {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 108px;
-  max-width: 130px;
+  gap: 6px;
+  min-width: 0;
   flex: 1;
   padding: 8px 10px;
   border-radius: var(--radius-sm);
-  background: var(--glass);
-  backdrop-filter: blur(10px);
+  background: rgba(19, 32, 58, 0.75);
   border: 1px solid var(--line);
   transition:
     border-color var(--dur-normal),
-    box-shadow var(--dur-normal),
-    transform var(--dur-fast);
+    box-shadow var(--dur-normal);
 }
 
 .active {
-  border-color: var(--accent, var(--cy));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent, var(--cy)) 40%, transparent), var(--glow-cy);
-  transform: scale(1.02);
+  border-color: color-mix(in srgb, var(--accent, var(--cy)) 65%, var(--line));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent, var(--cy)) 30%, transparent),
+    0 0 16px color-mix(in srgb, var(--accent, var(--cy)) 25%, transparent);
 }
 
-.header {
+.topRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  min-width: 0;
 }
 
-.avatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
+.meta {
+  flex: 1;
+  min-width: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #fff;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  flex-shrink: 0;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .name {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -53,44 +45,49 @@
 }
 
 .lives {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1px;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--r);
 }
 
-.heart {
+.heartIcon {
   font-size: 0.55rem;
-  opacity: 0.25;
-  transition: opacity 0.2s;
+  filter: drop-shadow(0 0 4px rgba(255, 84, 112, 0.45));
 }
 
-.heartOn {
-  opacity: 1;
-  filter: drop-shadow(0 0 3px var(--r));
+.stampCount {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--gold);
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(242, 193, 78, 0.35);
+  background: rgba(242, 193, 78, 0.08);
+  flex-shrink: 0;
 }
 
 .stamps {
-  display: flex;
-  gap: 2px;
-  margin-top: 2px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
 }
 
 .stamp {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  border: 1px solid var(--line);
-  background: rgba(7, 13, 24, 0.6);
-  font-size: 0.4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.35;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--cat-color) 45%, var(--line));
+  background: rgba(7, 13, 24, 0.5);
+  opacity: 0.45;
 }
 
 .stampOn {
   opacity: 1;
-  border-color: var(--gold);
-  box-shadow: 0 0 6px rgba(242, 193, 78, 0.4);
+  background: color-mix(in srgb, var(--cat-color) 55%, #070d18);
+  border-color: var(--cat-color);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--cat-color) 50%, transparent);
 }

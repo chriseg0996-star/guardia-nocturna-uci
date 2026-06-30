@@ -1,20 +1,19 @@
 import { motion } from 'framer-motion'
 import { useGameStore } from '../../game/store'
-import { EcgLine } from '../ui/EcgLine'
+import { useOnlineStore } from '../../online/onlineStore'
+import { BoardPreview } from '../ui/BoardPreview'
 import styles from './Splash.module.css'
 
-const TABLERO = `${import.meta.env.BASE_URL}assets/tablero.png`
-
 const stagger = {
-  animate: { transition: { staggerChildren: 0.06, delayChildren: 0.08 } },
+  animate: { transition: { staggerChildren: 0.05, delayChildren: 0.04 } },
 }
 
 const item = {
-  initial: { opacity: 0, y: 14 },
+  initial: { opacity: 0, y: 10 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] as const },
   },
 }
 
@@ -25,6 +24,8 @@ export function Splash() {
     (s) => s.gameStarted && s.players.length > 0 && s.winners.length === 0,
   )
   const currentPlayer = useGameStore((s) => s.players[s.currentPlayerIndex])
+  const createRoom = useOnlineStore((s) => s.createRoom)
+  const openJoin = () => useOnlineStore.setState({ screen: 'join' })
 
   return (
     <div className={styles.splash}>
@@ -33,62 +34,60 @@ export function Splash() {
       </div>
 
       <motion.div className={styles.content} variants={stagger} initial="initial" animate="animate">
-        <motion.div className={styles.ecgWrap} variants={item}>
-          <EcgLine />
-        </motion.div>
+        <div className={styles.hero}>
+          <motion.span className={styles.badge} variants={item}>
+            Medicina Crítica
+          </motion.span>
 
-        <motion.span className={styles.badge} variants={item}>
-          Medicina Crítica · Hot-seat
-        </motion.span>
+          <motion.h1 className={styles.title} variants={item}>
+            Guardia
+            <span className={styles.titleAccent}>Nocturna en UCI</span>
+          </motion.h1>
 
-        <motion.h1 className={styles.title} variants={item}>
-          Guardia
-          <span className={styles.titleAccent}>Nocturna en UCI</span>
-        </motion.h1>
+          <motion.div className={styles.boardWrap} variants={item}>
+            <BoardPreview compact />
+          </motion.div>
 
-        <motion.figure className={styles.boardArt} variants={item}>
-          <img
-            src={TABLERO}
-            alt="Tablero Guardia Nocturna — 4 salas UCI, 8 categorías clínicas"
-            width={1024}
-            height={1024}
-            loading="eager"
-            decoding="async"
-          />
-        </motion.figure>
+          <motion.p className={styles.subtitle} variants={item}>
+            8 categorías · tablero · guardia en UCI
+          </motion.p>
+        </div>
 
-        <motion.p className={styles.subtitle} variants={item}>
-          Domina las 8 categorías. Sobrevive la guardia. Gana el tablero.
-        </motion.p>
+        <motion.div className={styles.actions} variants={item}>
+          <div className={styles.onlineRow}>
+            <motion.button
+              type="button"
+              className={styles.ctaJoin}
+              onClick={openJoin}
+              whileTap={{ scale: 0.98 }}
+            >
+              Unirse con PIN
+            </motion.button>
+            <motion.button
+              type="button"
+              className={styles.ctaClassroom}
+              onClick={() => createRoom()}
+              whileTap={{ scale: 0.98 }}
+            >
+              Crear sala
+            </motion.button>
+          </div>
 
-        <motion.div className={styles.features} variants={item}>
-          <span className={styles.chip}>2–4 jugadores</span>
-          <span className={styles.chip}>28 casillas</span>
-          <span className={styles.chip}>Offline PWA</span>
-        </motion.div>
+          {canContinue ? (
+            <button type="button" className={styles.ctaContinue} onClick={continueGame}>
+              ▶ Continuar · {currentPlayer?.name ?? '—'}
+            </button>
+          ) : null}
 
-        <motion.div className={styles.ctaRow} variants={item}>
-          {canContinue && (
-            <>
-              <button type="button" className={styles.ctaSecondary} onClick={continueGame}>
-                ▶ Continuar partida
-              </button>
-              <p className={styles.savedHint}>Turno: {currentPlayer?.name ?? '—'}</p>
-            </>
-          )}
           <motion.button
             type="button"
-            className={styles.cta}
+            className={styles.ctaLocal}
             onClick={() => newGame()}
             whileTap={{ scale: 0.98 }}
           >
-            {canContinue ? 'Nueva partida' : 'Entrar a la guardia'}
+            {canContinue ? 'Nueva partida local' : 'Jugar en este dispositivo'}
           </motion.button>
         </motion.div>
-
-        <motion.p className={styles.credit} variants={item}>
-          Juego de mesa digital
-        </motion.p>
       </motion.div>
     </div>
   )

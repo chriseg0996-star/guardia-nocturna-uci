@@ -1,0 +1,42 @@
+.peg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--peg-color);
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 10px color-mix(in srgb, var(--peg-color) 40%, transparent);
+}
+
+.sm {
+  width: 26px;
+  height: 32px;
+  border-radius: 13px 13px 5px 5px;
+}
+
+.md {
+  width: 30px;
+  height: 38px;
+  border-radius: 15px 15px 6px 6px;
+}
+
+.lg {
+  width: clamp(20px, 5.5vw, 26px);
+  height: clamp(26px, 7vw, 32px);
+  border-radius: 50% 50% 42% 42%;
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  line-height: 1;
+}
+
+.lg .label {
+  font-size: 0.58rem;
+}

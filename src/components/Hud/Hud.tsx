@@ -1,27 +1,14 @@
 import type { CSSProperties } from 'react'
 import type { Player } from '../../game/engine'
-import { CategoryWheel } from './CategoryWheel'
-import { Dice } from '../Dice/Dice'
-import { EcgLine } from '../ui/EcgLine'
+import { StampTracker } from './StampTracker'
 import styles from './Hud.module.css'
 
 type HudProps = {
   currentPlayer: Player | undefined
-  diceValue: number | null
-  rolling: boolean
-  diceDisabled: boolean
   lapMessage: string | null
-  onRoll: () => void
 }
 
-export function Hud({
-  currentPlayer,
-  diceValue,
-  rolling,
-  diceDisabled,
-  lapMessage,
-  onRoll,
-}: HudProps) {
+export function Hud({ currentPlayer, lapMessage }: HudProps) {
   const turnStyle = currentPlayer
     ? ({ '--turn-color': currentPlayer.color } as CSSProperties)
     : undefined
@@ -35,16 +22,10 @@ export function Hud({
         </div>
       </div>
 
-      <EcgLine />
-
       {lapMessage && <div className={styles.lapBanner}>{lapMessage}</div>}
 
       <div className={styles.wheelArea}>
-        <CategoryWheel currentPlayer={currentPlayer} />
-      </div>
-
-      <div className={styles.diceRow}>
-        <Dice value={diceValue} rolling={rolling} disabled={diceDisabled} onRoll={onRoll} />
+        <StampTracker currentPlayer={currentPlayer} />
       </div>
     </div>
   )

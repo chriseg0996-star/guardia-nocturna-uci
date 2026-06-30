@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Board } from '../Board/Board'
+import { Dice } from '../Dice/Dice'
 import { Hud } from '../Hud/Hud'
 import { PlayerPanel } from '../Hud/PlayerPanel'
 import { CornerModal } from '../CornerModal/CornerModal'
@@ -9,19 +10,22 @@ import { QuestionModal } from '../QuestionModal/QuestionModal'
 import { WinModal } from '../WinModal/WinModal'
 import { SettingsModal } from '../Settings/SettingsModal'
 import { computeDiceRoll, useGameStore } from '../../game/store'
+import { useOnlineStore } from '../../online/onlineStore'
 import styles from './GameView.module.css'
 
 const ROLL_MS = 550
-const STEP_MS = 300
+const STEP_MS = 380
+const LAND_PAUSE_MS = 700
 
 const PHASE_HINT: Record<string, string> = {
   roll: '◉ Toca el dado para avanzar',
   rolling: '⟳ Calculando pasos…',
-  moving: '→ Avanzando por el tablero',
+  moving: '→ Avanzando por el tablero…',
+  landed: '✦ Casilla alcanzada',
   resolving: '✦ Resuelve la casilla',
 }
 
-export function GameView() {
+export function GameView({ onlineHost = false }: { onlineHost?: boolean }) {
   const players = useGameStore((s) => s.players)
   const board = useGameStore((s) => s.board)
   const settings = useGameStore((s) => s.settings)
@@ -40,7 +44,11 @@ export function GameView() {
   const winners = useGameStore((s) => s.winners)
   const winReason = useGameStore((s) => s.winReason)
   const lastFeedback = useGameStore((s) => s.lastFeedback)
+  const statusMessage = useGameStore((s) => s.statusMessage)
+  const onlineMode = useGameStore((s) => s.onlineMode)
   const pauseToMenu = useGameStore((s) => s.pauseToMenu)
+  const leaveOnline = useOnlineStore((s) => s.leaveRoom)
+  const resetOnline = useOnlineStore((s) => s.reset)
   const newGame = useGameStore((s) => s.newGame)
   const updateSettings = useGameStore((s) => s.updateSettings)
   const beginRoll = useGameStore((s) => s.beginRoll)
@@ -48,6 +56,7 @@ export function GameView() {
   const beginMove = useGameStore((s) => s.beginMove)
   const stepMove = useGameStore((s) => s.stepMove)
   const finishMove = useGameStore((s) => s.finishMove)
+  const beginResolve = useGameStore((s) => s.beginResolve)
   const submitQuestion = useGameStore((s) => s.submitQuestion)
   const dismissEvent = useGameStore((s) => s.dismissEvent)
   const dismissCorner = useGameStore((s) => s.dismissCorner)
@@ -59,14 +68,20 @@ export function GameView() {
   const stepTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const currentPlayer = players[currentPlayerIndex]
-  const gameLocked = turnPhase !== 'roll' || winners.length > 0
+  const isOnlineSpectator = onlineHost || onlineMode === 'host'
+  const gameLocked = isOnlineSpectator || turnPhase !== 'roll' || winners.length > 0
 
   const highlightIndex =
-    (turnPhase === 'moving' || turnPhase === 'resolving') && animPosition !== null
+    turnPhase === 'moving' && animPosition !== null
       ? animPosition
-      : turnPhase === 'resolving' && landedTileIndex !== null
+      : (turnPhase === 'landed' || turnPhase === 'resolving') && landedTileIndex !== null
         ? landedTileIndex
-        : currentPlayer?.position ?? null
+        : null
+
+  const activePlayerId =
+    turnPhase === 'roll' || turnPhase === 'rolling' || turnPhase === 'moving' || turnPhase === 'landed'
+      ? (currentPlayer?.id ?? null)
+      : null
 
   const clearTimers = useCallback(() => {
     if (rollTimer.current) clearTimeout(rollTimer.current)
@@ -82,16 +97,17 @@ export function GameView() {
   }, [lastFeedback, clearFeedback])
 
   const handleRoll = useCallback(() => {
-    if (turnPhase !== 'roll' || winners.length > 0) return
+    if (isOnlineSpectator || turnPhase !== 'roll' || winners.length > 0) return
     beginRoll()
     rollTimer.current = setTimeout(() => {
       const value = computeDiceRoll()
       setDiceRolling(value)
       setTimeout(() => beginMove(), 220)
     }, ROLL_MS)
-  }, [turnPhase, winners.length, beginRoll, setDiceRolling, beginMove])
+  }, [isOnlineSpectator, turnPhase, winners.length, beginRoll, setDiceRolling, beginMove])
 
   useEffect(() => {
+    if (isOnlineSpectator) return
     if (turnPhase !== 'moving') {
       if (stepTimer.current) clearInterval(stepTimer.current)
       return
@@ -106,21 +122,47 @@ export function GameView() {
     return () => {
       if (stepTimer.current) clearInterval(stepTimer.current)
     }
-  }, [turnPhase, stepMove, finishMove])
+  }, [isOnlineSpectator, turnPhase, stepMove, finishMove])
+
+  useEffect(() => {
+    if (isOnlineSpectator) return
+    if (turnPhase !== 'landed') return
+    const id = setTimeout(() => beginResolve(), LAND_PAUSE_MS)
+    return () => clearTimeout(id)
+  }, [isOnlineSpectator, turnPhase, landedTileIndex, beginResolve])
+
+  const phaseHint =
+    isOnlineSpectator && statusMessage
+      ? statusMessage
+      : (PHASE_HINT[turnPhase] ?? '')
 
   return (
     <div className={styles.game}>
       <header className={styles.topBar}>
         <div className={styles.brand}>
           <span className={styles.brandTitle}>Guardia Nocturna</span>
-          <span className={styles.brandSub}>Medicina Crítica · UCI</span>
+          <span className={styles.brandSub}>
+            {onlineHost ? 'Modo aula · Presentador' : 'Medicina Crítica · UCI'}
+          </span>
         </div>
         <div className={styles.topActions}>
           <button type="button" className={styles.settingsBtn} onClick={() => setSettingsOpen(true)} aria-label="Ajustes">
             ⚙
           </button>
-          <button type="button" className={styles.menuBtn} onClick={pauseToMenu}>
-            Pausa
+          <button
+            type="button"
+            className={styles.menuBtn}
+            onClick={() => {
+              if (onlineHost) {
+                leaveOnline()
+                resetOnline()
+                newGame()
+              } else {
+                pauseToMenu()
+              }
+            }}
+          >
+            {onlineHost ? 'Cerrar sala' : 'Pausa'}
           </button>
         </div>
       </header>
@@ -146,7 +188,7 @@ export function GameView() {
         )}
       </AnimatePresence>
 
-      <p className={styles.phaseHint}>{PHASE_HINT[turnPhase] ?? ''}</p>
+      <p className={styles.phaseHint}>{phaseHint}</p>
 
       <div className={styles.boardArea}>
         <Board
@@ -155,16 +197,27 @@ export function GameView() {
           highlightIndex={highlightIndex}
           animPosition={animPosition}
           animPlayerId={animPlayerId}
+          activePlayerId={activePlayerId}
           center={
             <Hud
               currentPlayer={currentPlayer}
-              diceValue={diceValue}
-              rolling={turnPhase === 'rolling'}
-              diceDisabled={gameLocked}
-              lapMessage={turnPhase === 'moving' ? lapMessage : null}
-              onRoll={handleRoll}
+              lapMessage={
+                lapMessage && (turnPhase === 'moving' || turnPhase === 'landed') ? lapMessage : null
+              }
             />
           }
+        />
+      </div>
+
+      <div className={styles.diceBar}>
+        {turnPhase === 'moving' && lapMessage && (
+          <p className={styles.lapNote}>{lapMessage}</p>
+        )}
+        <Dice
+          value={diceValue}
+          rolling={turnPhase === 'rolling'}
+          disabled={gameLocked}
+          onRoll={handleRoll}
         />
       </div>
 
@@ -173,11 +226,17 @@ export function GameView() {
           <WinModal
             winners={winners}
             reason={winReason}
-            onExit={newGame}
+            onExit={() => {
+              if (onlineHost) {
+                leaveOnline()
+                resetOnline()
+              }
+              newGame()
+            }}
           />
         )}
 
-        {winners.length === 0 && turnPhase === 'resolving' && resolveKind === 'question' && activeQuestion && activeCategoryId !== null && currentPlayer && (
+        {!isOnlineSpectator && winners.length === 0 && turnPhase === 'resolving' && resolveKind === 'question' && activeQuestion && activeCategoryId !== null && currentPlayer && (
           <QuestionModal
             key={`q-${activeCategoryId}-${activeQuestion.q.slice(0, 12)}`}
             card={activeQuestion}
@@ -190,11 +249,11 @@ export function GameView() {
           />
         )}
 
-        {winners.length === 0 && turnPhase === 'resolving' && resolveKind === 'event' && activeEvent && (
+        {!isOnlineSpectator && winners.length === 0 && turnPhase === 'resolving' && resolveKind === 'event' && activeEvent && (
           <EventModal event={activeEvent} lapMessage={lapMessage} onDismiss={dismissEvent} />
         )}
 
-        {winners.length === 0 && turnPhase === 'resolving' && resolveKind === 'corner' && cornerKey && (
+        {!isOnlineSpectator && winners.length === 0 && turnPhase === 'resolving' && resolveKind === 'corner' && cornerKey && (
           <CornerModal corner={cornerKey} lapMessage={lapMessage} onDismiss={dismissCorner} />
         )}
       </AnimatePresence>

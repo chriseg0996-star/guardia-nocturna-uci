@@ -12,6 +12,7 @@ type BoardProps = {
   highlightIndex: number | null
   animPosition: number | null
   animPlayerId: Player['id'] | null
+  activePlayerId: Player['id'] | null
   center: ReactNode
 }
 
@@ -21,13 +22,11 @@ export function Board({
   highlightIndex,
   animPosition,
   animPlayerId,
+  activePlayerId,
   center,
 }: BoardProps) {
   return (
     <div className={styles.boardWrap}>
-      <span className={styles.cornerBadge} aria-hidden="true">
-        UCI · 28
-      </span>
       <div className={styles.board} role="grid" aria-label="Tablero perimetral UCI">
         {tiles.map((tile) => {
           const { row, col } = tileToGrid(tile.index)
@@ -48,6 +47,7 @@ export function Board({
           players={players}
           animPosition={animPosition}
           animPlayerId={animPlayerId}
+          activePlayerId={activePlayerId}
         />
       </div>
     </div>

@@ -8,15 +8,26 @@ type TileProps = {
   active?: boolean
 }
 
+const CORNER_ROOM: Partial<Record<string, string>> = {
+  go: 'var(--p3)',
+  descanso: 'var(--p4)',
+  codigo_azul: 'var(--p2)',
+  guardia: 'var(--p1)',
+}
+
 export function Tile({ tile, active = false }: TileProps) {
   const category = tile.categoryId ? getCategory(tile.categoryId) : undefined
 
   const cornerClass =
     tile.corner === 'go'
       ? styles.cornerGo
-      : tile.corner === 'codigo_azul'
-        ? styles.cornerCode
-        : ''
+      : tile.corner === 'descanso'
+        ? styles.cornerDescanso
+        : tile.corner === 'codigo_azul'
+          ? styles.cornerCode
+          : tile.corner === 'guardia'
+            ? styles.cornerGuardia
+            : ''
 
   const className = [
     styles.tile,
@@ -31,7 +42,7 @@ export function Tile({ tile, active = false }: TileProps) {
 
   const icon =
     tile.type === 'estrella'
-      ? '✦'
+      ? '★'
       : tile.type === 'especial'
         ? tile.corner === 'go'
           ? '🏁'
@@ -45,12 +56,20 @@ export function Tile({ tile, active = false }: TileProps) {
   const label =
     tile.type === 'categoria' ? (category?.shortName ?? tile.label) : tile.label
 
-  const style: CSSProperties | undefined =
-    category && tile.type === 'categoria' ? { '--accent': category.color } as CSSProperties : undefined
+  const roomColor = tile.corner ? CORNER_ROOM[tile.corner] : undefined
+
+  const style: CSSProperties = {
+    ...(category && tile.type === 'categoria'
+      ? { '--accent': category.color }
+      : {}),
+    ...(roomColor ? { '--room': roomColor } : {}),
+  } as CSSProperties
 
   return (
     <div className={className} style={style} title={category?.name ?? tile.label}>
       <span className={styles.shine} aria-hidden="true" />
+      {tile.type === 'categoria' && <span className={styles.catStripe} aria-hidden="true" />}
+      {tile.type === 'especial' && <span className={styles.roomGlow} aria-hidden="true" />}
       <span className={styles.icon} aria-hidden="true">
         {icon}
       </span>

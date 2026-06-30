@@ -7,6 +7,14 @@ const base = process.env.VITE_BASE_PATH ?? '/guardia-nocturna-uci/'
 
 export default defineConfig({
   base,
+  server: {
+    proxy: {
+      '/socket.io': {
+        target: 'http://localhost:3001',
+        ws: true,
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

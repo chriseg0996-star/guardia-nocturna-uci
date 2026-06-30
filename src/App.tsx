@@ -1,9 +1,13 @@
+import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import styles from './App.module.css'
 import { GameView } from './components/Game/GameView'
+import { OnlineFlow } from './components/Online/OnlineFlow'
 import { Setup } from './components/Setup/Setup'
 import { Splash } from './components/Splash/Splash'
 import { useGameStore } from './game/store'
+import { parseJoinPinFromUrl } from './online/joinUrl'
+import { useOnlineStore } from './online/onlineStore'
 
 const pageVariants = {
   initial: { opacity: 0, x: 12 },
@@ -13,6 +17,24 @@ const pageVariants = {
 
 export default function App() {
   const screen = useGameStore((s) => s.screen)
+  const onlineScreen = useOnlineStore((s) => s.screen)
+
+  useEffect(() => {
+    if (parseJoinPinFromUrl()) {
+      useOnlineStore.getState().bindSocketEvents()
+      useOnlineStore.setState({ screen: 'join' })
+    }
+  }, [])
+
+  const exitOnline = () => useOnlineStore.getState().reset()
+
+  if (onlineScreen !== 'idle') {
+    return (
+      <div className={styles.app}>
+        <OnlineFlow onExit={exitOnline} />
+      </div>
+    )
+  }
 
   return (
     <div className={styles.app}>
@@ -20,12 +42,12 @@ export default function App() {
         {screen === 'splash' && (
           <motion.div
             key="splash"
+            className={styles.screen}
             variants={pageVariants}
             initial="initial"
             animate="animate"
             exit="exit"
             transition={{ duration: 0.28 }}
-            style={{ height: '100%' }}
           >
             <Splash />
           </motion.div>
@@ -33,12 +55,12 @@ export default function App() {
         {screen === 'setup' && (
           <motion.div
             key="setup"
+            className={styles.screen}
             variants={pageVariants}
             initial="initial"
             animate="animate"
             exit="exit"
             transition={{ duration: 0.28 }}
-            style={{ height: '100%' }}
           >
             <Setup />
           </motion.div>
@@ -46,12 +68,12 @@ export default function App() {
         {screen === 'game' && (
           <motion.div
             key="game"
+            className={styles.screen}
             variants={pageVariants}
             initial="initial"
             animate="animate"
             exit="exit"
             transition={{ duration: 0.28 }}
-            style={{ height: '100%' }}
           >
             <GameView />
           </motion.div>

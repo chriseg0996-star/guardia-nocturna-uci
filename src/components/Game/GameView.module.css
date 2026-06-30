@@ -68,17 +68,10 @@
 }
 
 .playersStrip {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   gap: 6px;
-  overflow-x: auto;
   flex-shrink: 0;
-  padding-bottom: 2px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.playersStrip::-webkit-scrollbar {
-  display: none;
 }
 
 .boardArea {
@@ -87,6 +80,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.diceBar {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.lapNote {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: var(--gold);
+  text-align: center;
 }
 
 .phaseHint {

@@ -1,33 +1,22 @@
-.tokenWrap {
+.anchor {
   position: absolute;
   transform: translate(-50%, -50%);
   z-index: 6;
   pointer-events: none;
 }
 
-.token {
-  width: clamp(20px, 5.5vw, 28px);
-  height: clamp(20px, 5.5vw, 28px);
-  border-radius: 50%;
-  border: 2.5px solid rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.tokenWrap {
   position: relative;
 }
 
-.token::after {
+.moving::after {
   content: '';
   position: absolute;
-  inset: -4px;
+  inset: -6px;
   border-radius: 50%;
-  border: 2px solid currentColor;
-  opacity: 0;
+  border: 2px solid var(--cy);
+  opacity: 0.5;
   animation: token-ring 1.5s ease-out infinite;
-}
-
-.moving::after {
-  opacity: 0.6;
 }
 
 @keyframes token-ring {
@@ -41,17 +30,31 @@
   }
 }
 
-.initial {
-  font-family: var(--font-display);
-  font-size: 0.62rem;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  z-index: 1;
+.activeTurn::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid var(--cy);
+  opacity: 0.65;
+  animation: active-pulse 2s ease-in-out infinite;
+}
+
+@keyframes active-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .token::after {
+  .moving::after,
+  .activeTurn::before {
     display: none;
   }
 }

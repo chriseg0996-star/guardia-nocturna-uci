@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { GameStartWire, GameSyncWire } from '../../shared/protocol'
 import { persist } from 'zustand/middleware'
 import type { Card, EventCard } from '../data/types'
 import { pickEvent } from '../data/events'
@@ -33,7 +34,9 @@ import {
 
 export type AppScreen = 'splash' | 'setup' | 'game'
 
-export type TurnPhase = 'roll' | 'rolling' | 'moving' | 'resolving'
+export type OnlineMode = false | 'host' | 'player'
+
+export type TurnPhase = 'roll' | 'rolling' | 'moving' | 'landed' | 'resolving'
 
 export type ResolveKind = 'question' | 'event' | 'corner'
 
@@ -46,6 +49,7 @@ type GameStore = {
   settings: GameSettings
   currentPlayerIndex: number
   gameStarted: boolean
+  onlineMode: OnlineMode
   winners: Player[]
   winReason: WinReason | null
 
@@ -64,18 +68,23 @@ type GameStore = {
   usedQuestionIds: Record<number, number[]>
   usedEventIds: number[]
   lastFeedback: string | null
+  statusMessage: string | null
 
   setScreen: (screen: AppScreen) => void
   setPlayerCount: (count: number) => void
   setPlayerName: (index: number, name: string) => void
   updateSettings: (partial: Partial<GameSettings>) => void
   startGame: () => void
+  hydrateFromOnlineHost: (game: GameStartWire) => void
+  hydrateFromOnlinePlayer: (game: GameStartWire) => void
+  applyServerSync: (sync: GameSyncWire) => void
   resetToSetup: () => void
   beginRoll: () => void
   setDiceRolling: (value: number) => void
   beginMove: () => void
   stepMove: () => boolean
   finishMove: () => void
+  beginResolve: () => void
   submitQuestion: (selectedOption?: number, manualCorrect?: boolean, timedOut?: boolean) => void
   dismissEvent: () => void
   dismissCorner: () => void
@@ -128,6 +137,7 @@ const initialTurnState = {
   usedQuestionIds: {} as Record<number, number[]>,
   usedEventIds: [] as number[],
   lastFeedback: null as string | null,
+  statusMessage: null as string | null,
   winners: [] as Player[],
   winReason: null as WinReason | null,
 }
@@ -173,6 +183,7 @@ export const useGameStore = create<GameStore>()(
       settings: { ...DEFAULT_SETTINGS },
       currentPlayerIndex: 0,
       gameStarted: false,
+      onlineMode: false,
       ...initialTurnState,
 
       setScreen: (screen) => set({ screen }),
@@ -198,10 +209,94 @@ export const useGameStore = create<GameStore>()(
         set({
           screen: 'game',
           gameStarted: true,
+          onlineMode: false,
           players: buildPlayers(playerCount, playerNames),
           board: generateBoard(),
           currentPlayerIndex: 0,
           ...initialTurnState,
+        })
+      },
+
+      hydrateFromOnlineHost: (game) => {
+        const players: Player[] = game.players.map((p) => ({
+          id: p.id as PlayerId,
+          name: p.name,
+          color: p.color,
+          position: p.position,
+          lives: p.lives,
+          stamps: [...p.stamps],
+          eliminated: p.eliminated,
+        }))
+        set({
+          screen: 'game',
+          gameStarted: true,
+          onlineMode: 'host',
+          players,
+          playerCount: players.length,
+          settings: { ...game.settings },
+          board: generateBoard(),
+          currentPlayerIndex: game.currentPlayerIndex,
+          ...initialTurnState,
+        })
+      },
+
+      hydrateFromOnlinePlayer: (game) => {
+        const players: Player[] = game.players.map((p) => ({
+          id: p.id as PlayerId,
+          name: p.name,
+          color: p.color,
+          position: p.position,
+          lives: p.lives,
+          stamps: [...p.stamps],
+          eliminated: p.eliminated,
+        }))
+        set({
+          screen: 'game',
+          gameStarted: true,
+          onlineMode: 'player',
+          players,
+          playerCount: players.length,
+          settings: { ...game.settings },
+          board: generateBoard(),
+          currentPlayerIndex: game.currentPlayerIndex,
+          ...initialTurnState,
+        })
+      },
+
+      applyServerSync: (sync) => {
+        const players: Player[] = sync.players.map((p) => ({
+          id: p.id as PlayerId,
+          name: p.name,
+          color: p.color,
+          position: p.position,
+          lives: p.lives,
+          stamps: [...p.stamps],
+          eliminated: p.eliminated,
+        }))
+        const winners =
+          sync.turnPhase === 'ended'
+            ? players.filter((p) => sync.winners.includes(p.id))
+            : []
+        const clientPhase =
+          sync.turnPhase === 'ended' ? 'roll' : (sync.turnPhase as TurnPhase)
+
+        set({
+          players,
+          settings: { ...sync.settings },
+          currentPlayerIndex: sync.currentPlayerIndex,
+          turnPhase: clientPhase,
+          diceValue: sync.diceValue,
+          animPosition: sync.animPosition,
+          animPlayerId: sync.animPlayerId as PlayerId | null,
+          landedTileIndex: sync.landedTileIndex,
+          lapMessage: sync.lapMessage,
+          resolveKind: sync.resolveKind,
+          cornerKey: sync.cornerKey,
+          lastFeedback: sync.lastFeedback,
+          statusMessage: sync.statusMessage,
+          winners,
+          winReason: sync.turnPhase === 'ended' ? sync.winReason : null,
+          onlineMode: sync.yourPlayerId === null ? 'host' : 'player',
         })
       },
 
@@ -216,6 +311,7 @@ export const useGameStore = create<GameStore>()(
         set({
           screen: 'setup',
           gameStarted: false,
+          onlineMode: false,
           players: [],
           currentPlayerIndex: 0,
           ...initialTurnState,
@@ -296,7 +392,7 @@ export const useGameStore = create<GameStore>()(
 
           set({
             players: updatedPlayers,
-            turnPhase: 'resolving',
+            turnPhase: 'landed',
             landedTileIndex: position,
             lapMessage,
             resolveKind: 'question',
@@ -317,7 +413,7 @@ export const useGameStore = create<GameStore>()(
           const { card, index } = pickEvent(used)
           set({
             players: updatedPlayers,
-            turnPhase: 'resolving',
+            turnPhase: 'landed',
             landedTileIndex: position,
             lapMessage,
             resolveKind: 'event',
@@ -336,7 +432,7 @@ export const useGameStore = create<GameStore>()(
         if (tile.type === 'especial' && tile.corner) {
           set({
             players: updatedPlayers,
-            turnPhase: 'resolving',
+            turnPhase: 'landed',
             landedTileIndex: position,
             lapMessage,
             resolveKind: 'corner',
@@ -349,6 +445,11 @@ export const useGameStore = create<GameStore>()(
             moveStepsRemaining: 0,
           })
         }
+      },
+
+      beginResolve: () => {
+        if (get().turnPhase !== 'landed') return
+        set({ turnPhase: 'resolving' })
       },
 
       submitQuestion: (selectedOption, manualCorrect, timedOut) => {
