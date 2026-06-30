@@ -3,16 +3,18 @@ import { useGameStore } from '../../game/store'
 import { EcgLine } from '../ui/EcgLine'
 import styles from './Splash.module.css'
 
+const TABLERO = `${import.meta.env.BASE_URL}assets/tablero.png`
+
 const stagger = {
-  animate: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
+  animate: { transition: { staggerChildren: 0.06, delayChildren: 0.08 } },
 }
 
 const item = {
-  initial: { opacity: 0, y: 16 },
+  initial: { opacity: 0, y: 14 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1] as const },
   },
 }
 
@@ -35,12 +37,8 @@ export function Splash() {
           <EcgLine />
         </motion.div>
 
-        <motion.div className={styles.boardPreview} variants={item} aria-hidden="true">
-          <span className={styles.boardPreviewLabel}>28 CASILLAS</span>
-        </motion.div>
-
         <motion.span className={styles.badge} variants={item}>
-          Medicina Crítica
+          Medicina Crítica · Hot-seat
         </motion.span>
 
         <motion.h1 className={styles.title} variants={item}>
@@ -48,14 +46,25 @@ export function Splash() {
           <span className={styles.titleAccent}>Nocturna en UCI</span>
         </motion.h1>
 
+        <motion.figure className={styles.boardArt} variants={item}>
+          <img
+            src={TABLERO}
+            alt="Tablero Guardia Nocturna — 4 salas UCI, 8 categorías clínicas"
+            width={1024}
+            height={1024}
+            loading="eager"
+            decoding="async"
+          />
+        </motion.figure>
+
         <motion.p className={styles.subtitle} variants={item}>
-          Juego de mesa digital. Domina 8 categorías clínicas antes que se acaben tus vidas.
+          Domina las 8 categorías. Sobrevive la guardia. Gana el tablero.
         </motion.p>
 
         <motion.div className={styles.features} variants={item}>
           <span className={styles.chip}>2–4 jugadores</span>
-          <span className={styles.chip}>Hot-seat</span>
-          <span className={styles.chip}>Offline</span>
+          <span className={styles.chip}>28 casillas</span>
+          <span className={styles.chip}>Offline PWA</span>
         </motion.div>
 
         <motion.div className={styles.ctaRow} variants={item}>
@@ -64,9 +73,7 @@ export function Splash() {
               <button type="button" className={styles.ctaSecondary} onClick={continueGame}>
                 ▶ Continuar partida
               </button>
-              <p className={styles.savedHint}>
-                Turno: {currentPlayer?.name ?? '—'}
-              </p>
+              <p className={styles.savedHint}>Turno: {currentPlayer?.name ?? '—'}</p>
             </>
           )}
           <motion.button
@@ -80,7 +87,7 @@ export function Splash() {
         </motion.div>
 
         <motion.p className={styles.credit} variants={item}>
-          v1 · Guardia Nocturna
+          Juego de mesa digital
         </motion.p>
       </motion.div>
     </div>
