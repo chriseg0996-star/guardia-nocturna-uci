@@ -6,6 +6,8 @@ type CornerModalProps = {
   corner: 'go' | 'descanso' | 'codigo_azul' | 'guardia'
   lapMessage: string | null
   onDismiss: () => void
+  onMenu?: () => void
+  menuLabel?: string
 }
 
 const META = {
@@ -15,7 +17,7 @@ const META = {
   guardia: { icon: '🌙', label: 'Guardia Nocturna', sub: 'Esquina central de la UCI.', accent: '#34d3ee' },
 } as const
 
-export function CornerModal({ corner, lapMessage, onDismiss }: CornerModalProps) {
+export function CornerModal({ corner, lapMessage, onDismiss, onMenu, menuLabel = '← Menú' }: CornerModalProps) {
   const meta = META[corner]
 
   return (
@@ -25,6 +27,11 @@ export function CornerModal({ corner, lapMessage, onDismiss }: CornerModalProps)
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
+      {onMenu && (
+        <button type="button" className={styles.menuBtn} onClick={onMenu}>
+          {menuLabel}
+        </button>
+      )}
       <motion.div
         className={styles.card}
         initial={{ y: 40, scale: 0.92, opacity: 0 }}

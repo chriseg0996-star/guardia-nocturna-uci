@@ -9,6 +9,7 @@ import { Splash } from './components/Splash/Splash'
 import { useGameStore } from './game/store'
 import { parseJoinPinFromUrl } from './online/joinUrl'
 import { useOnlineStore } from './online/onlineStore'
+import { useBackNavigation } from './hooks/useBackNavigation'
 
 const pageVariants = {
   initial: { opacity: 0, x: 12 },
@@ -20,6 +21,8 @@ export default function App() {
   const screen = useGameStore((s) => s.screen)
   const setScreen = useGameStore((s) => s.setScreen)
   const onlineScreen = useOnlineStore((s) => s.screen)
+
+  useBackNavigation()
 
   useEffect(() => {
     if (parseJoinPinFromUrl()) {

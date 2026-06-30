@@ -11,6 +11,23 @@
   backdrop-filter: blur(6px);
 }
 
+.menuBtn {
+  position: absolute;
+  top: calc(var(--safe-top) + 10px);
+  left: 14px;
+  min-height: 36px;
+  padding: 4px 8px;
+  color: var(--fd);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 1;
+}
+
+.menuBtn:hover {
+  color: var(--txt);
+}
+
 .card {
   width: 100%;
   max-width: 400px;

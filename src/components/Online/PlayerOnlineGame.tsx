@@ -174,6 +174,8 @@ export function PlayerOnlineGame() {
             timerSeconds={settings.timerSeconds}
             lapMessage={privateQuestion.lapMessage}
             onSubmit={submitAnswer}
+            onClose={leaveRoom}
+            closeLabel="← Salir"
           />
         )}
 
@@ -182,6 +184,8 @@ export function PlayerOnlineGame() {
             event={privateEvent.event}
             lapMessage={privateEvent.lapMessage}
             onDismiss={dismissEvent}
+            onMenu={leaveRoom}
+            menuLabel="← Salir de sala"
           />
         )}
 
@@ -190,6 +194,8 @@ export function PlayerOnlineGame() {
             corner={privateCorner.corner}
             lapMessage={privateCorner.lapMessage}
             onDismiss={dismissCorner}
+            onMenu={leaveRoom}
+            menuLabel="← Salir de sala"
           />
         )}
       </AnimatePresence>

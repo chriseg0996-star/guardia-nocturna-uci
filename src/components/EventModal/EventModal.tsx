@@ -6,9 +6,11 @@ type EventModalProps = {
   event: EventCard
   lapMessage: string | null
   onDismiss: () => void
+  onMenu?: () => void
+  menuLabel?: string
 }
 
-export function EventModal({ event, lapMessage, onDismiss }: EventModalProps) {
+export function EventModal({ event, lapMessage, onDismiss, onMenu, menuLabel = '← Menú' }: EventModalProps) {
   return (
     <motion.div
       className={styles.overlay}
@@ -16,6 +18,11 @@ export function EventModal({ event, lapMessage, onDismiss }: EventModalProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
+      {onMenu && (
+        <button type="button" className={styles.menuBtn} onClick={onMenu}>
+          {menuLabel}
+        </button>
+      )}
       <motion.div
         className={styles.card}
         initial={{ y: 48, scale: 0.94 }}

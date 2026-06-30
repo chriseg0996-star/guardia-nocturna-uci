@@ -255,15 +255,17 @@ export function GameView({ onlineHost = false }: { onlineHost?: boolean }) {
             timerSeconds={settings.timerSeconds}
             lapMessage={lapMessage}
             onSubmit={submitQuestion}
+            onClose={pauseToMenu}
+            closeLabel="← Menú"
           />
         )}
 
         {!isOnlineSpectator && winners.length === 0 && turnPhase === 'resolving' && resolveKind === 'event' && activeEvent && (
-          <EventModal event={activeEvent} lapMessage={lapMessage} onDismiss={dismissEvent} />
+          <EventModal event={activeEvent} lapMessage={lapMessage} onDismiss={dismissEvent} onMenu={pauseToMenu} />
         )}
 
         {!isOnlineSpectator && winners.length === 0 && turnPhase === 'resolving' && resolveKind === 'corner' && cornerKey && (
-          <CornerModal corner={cornerKey} lapMessage={lapMessage} onDismiss={dismissCorner} />
+          <CornerModal corner={cornerKey} lapMessage={lapMessage} onDismiss={dismissCorner} onMenu={pauseToMenu} />
         )}
       </AnimatePresence>
 

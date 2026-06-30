@@ -10,15 +10,36 @@
 }
 
 .header {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 12px;
   flex-shrink: 0;
 }
 
+.headerSpacer {
+  width: 1px;
+  min-height: 1px;
+}
+
+.closeBtn {
+  justify-self: start;
+  min-height: 36px;
+  padding: 4px 2px;
+  color: var(--fd);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.closeBtn:hover {
+  color: var(--txt);
+}
+
 .catBadge {
+  justify-self: center;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -31,11 +52,21 @@
   color: var(--txt);
 }
 
+.meta {
+  margin: -4px 0 10px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--cy);
+  letter-spacing: 0.04em;
+}
+
 .catIcon {
   font-size: 1rem;
 }
 
 .timer {
+  justify-self: end;
   flex-shrink: 0;
   width: 52px;
   height: 52px;

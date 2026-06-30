@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import { getCategory } from '../../data/categories'
 import { QUESTIONS } from '../../data/questions'
 import type { Card } from '../../data/types'
 import { judgeQuestion } from '../../game/engine'
@@ -87,20 +86,8 @@ export function QuizView({ onExit }: QuizViewProps) {
 
   if (!item) return null
 
-  const category = getCategory(item.categoryId)
-
   return (
     <div className={styles.wrap}>
-      <header className={styles.top}>
-        <button type="button" className={styles.back} onClick={onExit}>
-          ← Salir
-        </button>
-        <span className={styles.progress}>
-          {current + 1}/{deck.length}
-        </span>
-      </header>
-      <p className={styles.mode}>Modo repaso · {category?.shortName ?? 'UCI'}</p>
-
       <AnimatePresence mode="wait">
         <QuestionModal
           key={`${item.categoryId}-${item.index}-${current}`}
@@ -111,6 +98,9 @@ export function QuizView({ onExit }: QuizViewProps) {
           timerSeconds={30}
           lapMessage={null}
           onSubmit={handleSubmit}
+          onClose={onExit}
+          closeLabel="← Menú"
+          meta={`Modo repaso · ${current + 1}/${deck.length}`}
         />
       </AnimatePresence>
     </div>

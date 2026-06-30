@@ -15,6 +15,9 @@ type QuestionModalProps = {
   timerSeconds: number
   lapMessage: string | null
   onSubmit: (selectedOption?: number, manualCorrect?: boolean, timedOut?: boolean) => void
+  onClose?: () => void
+  closeLabel?: string
+  meta?: string
 }
 
 export function QuestionModal({
@@ -25,6 +28,9 @@ export function QuestionModal({
   timerSeconds,
   lapMessage,
   onSubmit,
+  onClose,
+  closeLabel = '← Salir',
+  meta,
 }: QuestionModalProps) {
   const category = getCategory(categoryId)
   const isMc = card.options !== undefined && card.correct !== undefined
@@ -74,11 +80,18 @@ export function QuestionModal({
       style={{ '--accent': category?.color } as CSSProperties}
     >
       <div className={styles.header}>
+        {onClose ? (
+          <button type="button" className={styles.closeBtn} onClick={onClose}>
+            {closeLabel}
+          </button>
+        ) : (
+          <span className={styles.headerSpacer} aria-hidden="true" />
+        )}
         <div className={styles.catBadge}>
           <span className={styles.catIcon}>{category?.icon}</span>
           {category?.shortName ?? `Cat. ${categoryId}`}
         </div>
-        {timerEnabled && !judged && (
+        {timerEnabled && !judged ? (
           <div className={styles.timer} aria-label={`${remaining} segundos`}>
             <svg className={styles.timerSvg} viewBox="0 0 52 52">
               <circle className={styles.timerTrack} cx="26" cy="26" r={radius} />
@@ -93,8 +106,12 @@ export function QuestionModal({
             </svg>
             <span className={styles.timerNum}>{remaining}</span>
           </div>
+        ) : (
+          <span className={styles.headerSpacer} aria-hidden="true" />
         )}
       </div>
+
+      {meta && <p className={styles.meta}>{meta}</p>}
 
       <p className={styles.playerTag}>Responde, {player.name}</p>
       {lapMessage && <div className={styles.lap}>{lapMessage}</div>}
