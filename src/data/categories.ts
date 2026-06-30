@@ -2,10 +2,10 @@ import type { Category } from './types'
 
 export const CATEGORIES: readonly Category[] = [
   { id: 1, name: 'Anatomía y Fisiología Pulmonar', shortName: 'Anat. Pulmonar', color: '#5b8def', icon: '🫁' },
-  { id: 2, name: 'Capnografía', shortName: 'Capnografía', color: '#34d3ee', icon: '📈', pending: true },
-  { id: 3, name: 'Ácido Base', shortName: 'Ácido Base', color: '#a371f7', icon: '⚗️', pending: true },
-  { id: 4, name: 'Leyes de los Gases', shortName: 'Gases', color: '#f2c14e', icon: '💨', pending: true },
-  { id: 5, name: 'Mecánica Pulmonar', shortName: 'Mecánica', color: '#f08a3c', icon: '⚙️', pending: true },
+  { id: 2, name: 'Capnografía', shortName: 'Capnografía', color: '#34d3ee', icon: '📈' },
+  { id: 3, name: 'Ácido Base', shortName: 'Ácido Base', color: '#a371f7', icon: '⚗️' },
+  { id: 4, name: 'Leyes de los Gases', shortName: 'Gases', color: '#f2c14e', icon: '💨' },
+  { id: 5, name: 'Mecánica Pulmonar', shortName: 'Mecánica', color: '#f08a3c', icon: '⚙️' },
   { id: 6, name: 'Déficit de Oxígeno', shortName: 'Déf. O₂', color: '#ff5470', icon: '🩸' },
   { id: 7, name: 'Casos Clínicos', shortName: 'Casos', color: '#3fb950', icon: '🏥' },
   { id: 8, name: 'UCI Master', shortName: 'UCI Master', color: '#ffd166', icon: '⭐' },
