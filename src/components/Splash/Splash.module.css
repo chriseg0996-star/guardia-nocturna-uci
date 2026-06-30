@@ -4,7 +4,7 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  padding: calc(var(--safe-top) + 10px) 16px calc(var(--safe-bottom) + 10px);
+  padding: calc(var(--safe-top) + 12px) 18px calc(var(--safe-bottom) + 12px);
   overflow: hidden;
 }
 
@@ -14,19 +14,27 @@
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 90% 50% at 50% 0%, rgba(52, 211, 238, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(242, 193, 78, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 50% at 100% 100%, rgba(52, 211, 238, 0.08) 0%, transparent 50%),
     var(--bg);
 }
 
-.grid {
-  position: fixed;
+.vignette {
+  position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(38, 64, 95, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(38, 64, 95, 0.12) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
-  pointer-events: none;
+  background: radial-gradient(ellipse 70% 60% at 50% 40%, transparent 30%, rgba(7, 13, 24, 0.65) 100%);
+}
+
+.stampRing {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  width: min(90vw, 320px);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  border: 1px dashed rgba(242, 193, 78, 0.12);
+  opacity: 0.6;
 }
 
 .content {
@@ -39,159 +47,259 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
+  gap: 14px;
 }
 
-.hero {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.brand {
   text-align: center;
-  gap: 8px;
+  flex-shrink: 0;
 }
 
-.boardWrap {
-  flex-shrink: 1;
-  min-height: 0;
+.stampRow {
   display: flex;
-  align-items: center;
   justify-content: center;
+  gap: 5px;
+  margin-bottom: 12px;
 }
 
-.badge {
+.stamp {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px color-mix(in srgb, currentColor 40%, transparent);
+  opacity: 0.85;
+}
+
+.eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.55rem;
-  letter-spacing: 0.18em;
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--cy);
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(52, 211, 238, 0.28);
-  background: rgba(19, 32, 58, 0.7);
+  margin-bottom: 6px;
 }
 
 .title {
-  font-size: clamp(1.45rem, 6.5vw, 1.85rem);
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 8vw, 2.1rem);
   font-weight: 700;
   color: var(--txt);
-  letter-spacing: -0.02em;
-  line-height: 1.08;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
 }
 
-.titleAccent {
+.titleEm {
   display: block;
-  margin-top: 1px;
-  color: var(--cy);
+  margin-top: 2px;
+  background: linear-gradient(135deg, var(--gold) 0%, #ffe9a8 50%, var(--cy) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.subtitle {
-  font-size: 0.75rem;
+.tagline {
+  margin-top: 8px;
+  font-size: 0.78rem;
   color: var(--fd);
-  line-height: 1.35;
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
-.actions {
+.resumeBar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(63, 185, 80, 0.45);
+  background: linear-gradient(90deg, rgba(63, 185, 80, 0.14), rgba(63, 185, 80, 0.04));
+  text-align: left;
+  color: var(--txt);
+}
+
+.resumeIcon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(63, 185, 80, 0.2);
+  color: var(--g);
+  font-size: 0.75rem;
+}
+
+.resumeText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.resumeText strong {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.resumeText small {
+  font-size: 0.72rem;
+  color: var(--fd);
+}
+
+.modes {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+.modeCard {
+  position: relative;
+  padding: 14px 16px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: var(--glass);
+  box-shadow: var(--shadow-panel);
+  text-align: left;
+  overflow: hidden;
+}
+
+.modeCard::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+
+.modeAula::before {
+  background: linear-gradient(180deg, var(--gold), #e8a830);
+}
+
+.modeLocal::before {
+  background: linear-gradient(180deg, var(--cy), #1a9fb8);
+}
+
+.modeLabel {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.modeTitle {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--txt);
+  margin-bottom: 4px;
+}
+
+.modeDesc {
+  font-size: 0.76rem;
+  color: var(--fd);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.modeActions {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+}
+
+.btnGold {
   width: 100%;
-}
-
-.onlineRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.ctaJoin {
   min-height: var(--touch-min);
-  padding: 10px 8px;
+  padding: 12px 16px;
   border-radius: var(--radius);
-  border: 1px solid rgba(52, 211, 238, 0.5);
-  background: linear-gradient(180deg, rgba(52, 211, 238, 0.22), rgba(52, 211, 238, 0.08));
+  border: none;
+  background: linear-gradient(165deg, #f5d078 0%, #d4a032 100%);
+  color: #1a1208;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 16px rgba(242, 193, 78, 0.25);
+}
+
+.btnGhost {
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(52, 211, 238, 0.35);
+  background: transparent;
+  color: var(--cy);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.btnLocal {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(52, 211, 238, 0.4);
+  background: rgba(52, 211, 238, 0.1);
   color: var(--txt);
   font-family: var(--font-display);
-  font-size: 0.82rem;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.ctaClassroom {
-  min-height: var(--touch-min);
-  padding: 10px 8px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(242, 193, 78, 0.55);
-  background: linear-gradient(180deg, rgba(242, 193, 78, 0.25), rgba(242, 193, 78, 0.1));
-  color: #fff8e7;
-  font-family: var(--font-display);
-  font-size: 0.82rem;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.ctaContinue {
-  min-height: 40px;
-  padding: 8px 12px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(63, 185, 80, 0.45);
-  background: rgba(63, 185, 80, 0.1);
-  color: var(--g);
-  font-family: var(--font-display);
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
-.ctaLocal {
-  min-height: 40px;
-  padding: 8px 12px;
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  background: rgba(19, 32, 58, 0.55);
-  color: var(--fd);
-  font-family: var(--font-display);
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
-/* Pantallas muy bajas: ocultar tablero y subtítulo */
-@media (max-height: 620px) {
-  .boardWrap,
-  .subtitle {
+@media (max-height: 640px) {
+  .stampRing {
     display: none;
   }
 
-  .hero {
-    gap: 6px;
+  .stampRow {
+    margin-bottom: 8px;
+  }
+
+  .stamp {
+    width: 8px;
+    height: 8px;
   }
 
   .title {
-    font-size: 1.35rem;
+    font-size: 1.5rem;
+  }
+
+  .tagline {
+    display: none;
+  }
+
+  .modeCard {
+    padding: 12px 14px 14px;
+  }
+
+  .modeDesc {
+    margin-bottom: 10px;
+    font-size: 0.72rem;
+  }
+
+  .content {
+    gap: 10px;
+    justify-content: flex-start;
+    padding-top: 4px;
   }
 }
 
-/* Más espacio: tablero un poco más grande */
-@media (min-height: 740px) {
-  .hero {
-    gap: 12px;
+@media (max-height: 560px) {
+  .modeLabel,
+  .modeDesc {
+    display: none;
   }
 
-  .subtitle {
-    font-size: 0.82rem;
-  }
-
-  .onlineRow {
-    grid-template-columns: 1fr;
-  }
-
-  .ctaJoin,
-  .ctaClassroom {
-    font-size: 0.92rem;
-    padding: 12px 16px;
+  .resumeText small {
+    display: none;
   }
 }

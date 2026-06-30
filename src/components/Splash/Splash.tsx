@@ -1,19 +1,20 @@
 import { motion } from 'framer-motion'
 import { useGameStore } from '../../game/store'
 import { useOnlineStore } from '../../online/onlineStore'
-import { BoardPreview } from '../ui/BoardPreview'
 import styles from './Splash.module.css'
 
+const STAMPS = ['#5b8def', '#34d3ee', '#a371f7', '#f2c14e', '#f08a3c', '#ff5470', '#3fb950', '#ffd166']
+
 const stagger = {
-  animate: { transition: { staggerChildren: 0.05, delayChildren: 0.04 } },
+  animate: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
 }
 
 const item = {
-  initial: { opacity: 0, y: 10 },
+  initial: { opacity: 0, y: 12 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
   },
 }
 
@@ -30,63 +31,66 @@ export function Splash() {
   return (
     <div className={styles.splash}>
       <div className={styles.bg} aria-hidden="true">
-        <div className={styles.grid} />
+        <div className={styles.vignette} />
+        <div className={styles.stampRing} />
       </div>
 
       <motion.div className={styles.content} variants={stagger} initial="initial" animate="animate">
-        <div className={styles.hero}>
-          <motion.span className={styles.badge} variants={item}>
-            Medicina Crítica
-          </motion.span>
-
-          <motion.h1 className={styles.title} variants={item}>
-            Guardia
-            <span className={styles.titleAccent}>Nocturna en UCI</span>
-          </motion.h1>
-
-          <motion.div className={styles.boardWrap} variants={item}>
-            <BoardPreview compact />
-          </motion.div>
-
-          <motion.p className={styles.subtitle} variants={item}>
-            8 categorías · tablero · guardia en UCI
-          </motion.p>
-        </div>
-
-        <motion.div className={styles.actions} variants={item}>
-          <div className={styles.onlineRow}>
-            <motion.button
-              type="button"
-              className={styles.ctaJoin}
-              onClick={openJoin}
-              whileTap={{ scale: 0.98 }}
-            >
-              Unirse con PIN
-            </motion.button>
-            <motion.button
-              type="button"
-              className={styles.ctaClassroom}
-              onClick={() => createRoom()}
-              whileTap={{ scale: 0.98 }}
-            >
-              Crear sala
-            </motion.button>
+        <motion.header className={styles.brand} variants={item}>
+          <div className={styles.stampRow}>
+            {STAMPS.map((color) => (
+              <span key={color} className={styles.stamp} style={{ background: color }} />
+            ))}
           </div>
+          <p className={styles.eyebrow}>Medicina Crítica</p>
+          <h1 className={styles.title}>
+            Guardia <span className={styles.titleEm}>Nocturna</span>
+          </h1>
+          <p className={styles.tagline}>Tablero · preguntas UCI · 2–4 jugadores</p>
+        </motion.header>
 
-          {canContinue ? (
-            <button type="button" className={styles.ctaContinue} onClick={continueGame}>
-              ▶ Continuar · {currentPlayer?.name ?? '—'}
-            </button>
-          ) : null}
-
+        {canContinue && (
           <motion.button
             type="button"
-            className={styles.ctaLocal}
-            onClick={() => newGame()}
-            whileTap={{ scale: 0.98 }}
+            className={styles.resumeBar}
+            variants={item}
+            onClick={continueGame}
           >
-            {canContinue ? 'Nueva partida local' : 'Jugar en este dispositivo'}
+            <span className={styles.resumeIcon}>▶</span>
+            <span className={styles.resumeText}>
+              <strong>Continuar partida</strong>
+              <small>Turno de {currentPlayer?.name ?? '—'}</small>
+            </span>
           </motion.button>
+        )}
+
+        <motion.div className={styles.modes} variants={item}>
+          <article className={`${styles.modeCard} ${styles.modeAula}`}>
+            <div className={styles.modeLabel}>Recomendado en clase</div>
+            <h2 className={styles.modeTitle}>Modo aula</h2>
+            <p className={styles.modeDesc}>Proyector con el tablero. Alumnos en el móvil con PIN.</p>
+            <div className={styles.modeActions}>
+              <motion.button
+                type="button"
+                className={styles.btnGold}
+                onClick={() => createRoom()}
+                whileTap={{ scale: 0.98 }}
+              >
+                Crear sala
+              </motion.button>
+              <button type="button" className={styles.btnGhost} onClick={openJoin}>
+                Unirse con PIN
+              </button>
+            </div>
+          </article>
+
+          <article className={`${styles.modeCard} ${styles.modeLocal}`}>
+            <h2 className={styles.modeTitle}>Un solo móvil</h2>
+            <p className={styles.modeDesc}>Hot-seat: pasan el teléfono entre jugadores.</p>
+            <button type="button" className={styles.btnLocal} onClick={() => newGame()}>
+              {canContinue ? 'Nueva partida local' : 'Empezar partida local'}
+            </button>
+          </article>
         </motion.div>
       </motion.div>
     </div>
