@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Board } from '../Board/Board'
 import { Hud } from '../Hud/Hud'
@@ -7,6 +7,7 @@ import { CornerModal } from '../CornerModal/CornerModal'
 import { EventModal } from '../EventModal/EventModal'
 import { QuestionModal } from '../QuestionModal/QuestionModal'
 import { WinModal } from '../WinModal/WinModal'
+import { SettingsModal } from '../Settings/SettingsModal'
 import { computeDiceRoll, useGameStore } from '../../game/store'
 import styles from './GameView.module.css'
 
@@ -37,8 +38,11 @@ export function GameView() {
   const activeEvent = useGameStore((s) => s.activeEvent)
   const cornerKey = useGameStore((s) => s.cornerKey)
   const winners = useGameStore((s) => s.winners)
+  const winReason = useGameStore((s) => s.winReason)
   const lastFeedback = useGameStore((s) => s.lastFeedback)
-  const resetToSetup = useGameStore((s) => s.resetToSetup)
+  const pauseToMenu = useGameStore((s) => s.pauseToMenu)
+  const newGame = useGameStore((s) => s.newGame)
+  const updateSettings = useGameStore((s) => s.updateSettings)
   const beginRoll = useGameStore((s) => s.beginRoll)
   const setDiceRolling = useGameStore((s) => s.setDiceRolling)
   const beginMove = useGameStore((s) => s.beginMove)
@@ -48,6 +52,8 @@ export function GameView() {
   const dismissEvent = useGameStore((s) => s.dismissEvent)
   const dismissCorner = useGameStore((s) => s.dismissCorner)
   const clearFeedback = useGameStore((s) => s.clearFeedback)
+
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const rollTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const stepTimer = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -109,9 +115,14 @@ export function GameView() {
           <span className={styles.brandTitle}>Guardia Nocturna</span>
           <span className={styles.brandSub}>Medicina Crítica · UCI</span>
         </div>
-        <button type="button" className={styles.menuBtn} onClick={resetToSetup}>
-          Salir
-        </button>
+        <div className={styles.topActions}>
+          <button type="button" className={styles.settingsBtn} onClick={() => setSettingsOpen(true)} aria-label="Ajustes">
+            ⚙
+          </button>
+          <button type="button" className={styles.menuBtn} onClick={pauseToMenu}>
+            Pausa
+          </button>
+        </div>
       </header>
 
       <div className={styles.playersStrip}>
@@ -158,7 +169,13 @@ export function GameView() {
       </div>
 
       <AnimatePresence mode="wait">
-        {winners.length > 0 && <WinModal winners={winners} onExit={resetToSetup} />}
+        {winners.length > 0 && (
+          <WinModal
+            winners={winners}
+            reason={winReason}
+            onExit={newGame}
+          />
+        )}
 
         {winners.length === 0 && turnPhase === 'resolving' && resolveKind === 'question' && activeQuestion && activeCategoryId !== null && currentPlayer && (
           <QuestionModal
@@ -179,6 +196,16 @@ export function GameView() {
 
         {winners.length === 0 && turnPhase === 'resolving' && resolveKind === 'corner' && cornerKey && (
           <CornerModal corner={cornerKey} lapMessage={lapMessage} onDismiss={dismissCorner} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {settingsOpen && (
+          <SettingsModal
+            settings={settings}
+            onChange={updateSettings}
+            onClose={() => setSettingsOpen(false)}
+          />
         )}
       </AnimatePresence>
     </div>

@@ -95,7 +95,7 @@ src/
 - **P0** ✓ Scaffold, PWA, tokens, Setup
 - **P1** ✓ Tablero perimetral, dado, fichas animadas, detección de vuelta
 - **P2** ✓ Modales pregunta/evento/esquina, timer, sellos y vidas en juego
-- **P3** Victoria, settings, persistencia completa
+- **P3** ✓ Settings, persistencia completa, reanudar partida, victoria/eliminación
 - **P4** Pulido móvil, haptics, sonido, deploy
 
 ## Licencia

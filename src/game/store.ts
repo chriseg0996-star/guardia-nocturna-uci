@@ -7,7 +7,6 @@ import { DEFAULT_PLAYER_NAMES, PLAYER_COLORS } from '../data/categories'
 import {
   advancePosition,
   applyLifeChange,
-  checkWinners,
   createPlayer,
   DEFAULT_SETTINGS,
   judgeQuestion,
@@ -25,6 +24,12 @@ import {
   applyQuestionOutcome,
   syncElimination,
 } from './resolution'
+import {
+  eliminationMessage,
+  mergeFeedback,
+  resolveWinResult,
+  type WinReason,
+} from './win'
 
 export type AppScreen = 'splash' | 'setup' | 'game'
 
@@ -42,6 +47,7 @@ type GameStore = {
   currentPlayerIndex: number
   gameStarted: boolean
   winners: Player[]
+  winReason: WinReason | null
 
   turnPhase: TurnPhase
   diceValue: number | null
@@ -74,6 +80,10 @@ type GameStore = {
   dismissEvent: () => void
   dismissCorner: () => void
   clearFeedback: () => void
+  pauseToMenu: () => void
+  newGame: () => void
+  continueGame: () => void
+  abandonGame: () => void
 }
 
 function clampPlayerCount(count: number): number {
@@ -98,8 +108,8 @@ function nextActivePlayerIndex(players: Player[], from: number): number {
   return from
 }
 
-function detectWinners(players: Player[], settings: GameSettings): Player[] {
-  return checkWinners(players, settings)
+function detectWin(players: Player[], settings: GameSettings) {
+  return resolveWinResult(players, settings)
 }
 
 const initialTurnState = {
@@ -119,14 +129,16 @@ const initialTurnState = {
   usedEventIds: [] as number[],
   lastFeedback: null as string | null,
   winners: [] as Player[],
+  winReason: null as WinReason | null,
 }
 
 function endTurnState(get: () => GameStore, set: (partial: Partial<GameStore>) => void) {
   const { currentPlayerIndex, players, settings } = get()
-  const winners = detectWinners(players, settings)
-  if (winners.length > 0) {
+  const { winners, reason } = detectWin(players, settings)
+  if (winners.length > 0 && reason) {
     set({
       winners,
+      winReason: reason,
       turnPhase: 'resolving',
       resolveKind: null,
       activeQuestion: null,
@@ -175,7 +187,11 @@ export const useGameStore = create<GameStore>()(
         }
       },
 
-      updateSettings: (partial) => set({ settings: { ...get().settings, ...partial } }),
+      updateSettings: (partial) => {
+        const next = { ...get().settings, ...partial }
+        if (!next.winUciMaster && !next.winSurvival) return
+        set({ settings: next })
+      },
 
       startGame: () => {
         const { playerCount, playerNames } = get()
@@ -190,8 +206,31 @@ export const useGameStore = create<GameStore>()(
       },
 
       resetToSetup: () => {
+        get().abandonGame()
+        set({ screen: 'setup' })
+      },
+
+      pauseToMenu: () => set({ screen: 'splash' }),
+
+      newGame: () => {
         set({
           screen: 'setup',
+          gameStarted: false,
+          players: [],
+          currentPlayerIndex: 0,
+          ...initialTurnState,
+        })
+      },
+
+      continueGame: () => {
+        const { gameStarted, players, winners } = get()
+        if (gameStarted && players.length > 0 && winners.length === 0) {
+          set({ screen: 'game' })
+        }
+      },
+
+      abandonGame: () => {
+        set({
           gameStarted: false,
           players: [],
           currentPlayerIndex: 0,
@@ -338,7 +377,11 @@ export const useGameStore = create<GameStore>()(
             : '✗ Incorrecto — −1 vida'
 
         const nextPlayers = players.map((p) => (p.id === player.id ? updated : p))
-        set({ players: nextPlayers, lastFeedback: feedback })
+        const elim = eliminationMessage(player, updated)
+        set({
+          players: nextPlayers,
+          lastFeedback: mergeFeedback(feedback, elim),
+        })
         endTurnState(get, set)
       },
 
@@ -353,7 +396,9 @@ export const useGameStore = create<GameStore>()(
           player.id,
           players,
         )
-        set({ players: nextPlayers, lastFeedback: message })
+        const updated = nextPlayers[currentPlayerIndex]
+        const elim = updated ? eliminationMessage(player, updated) : null
+        set({ players: nextPlayers, lastFeedback: mergeFeedback(message, elim) })
         endTurnState(get, set)
       },
 
@@ -365,7 +410,8 @@ export const useGameStore = create<GameStore>()(
 
         const { player: updated, message, endTurnOnly } = applyCornerEffect(cornerKey, player)
         const nextPlayers = players.map((p) => (p.id === player.id ? updated : p))
-        set({ players: nextPlayers, lastFeedback: message })
+        const elim = eliminationMessage(player, updated)
+        set({ players: nextPlayers, lastFeedback: mergeFeedback(message, elim) })
 
         if (endTurnOnly) {
           endTurnState(get, set)
@@ -395,6 +441,9 @@ export const useGameStore = create<GameStore>()(
         gameStarted: state.gameStarted,
         turnPhase: state.turnPhase,
         diceValue: state.diceValue,
+        moveStepsRemaining: state.moveStepsRemaining,
+        animPosition: state.animPosition,
+        animPlayerId: state.animPlayerId,
         landedTileIndex: state.landedTileIndex,
         lapMessage: state.lapMessage,
         resolveKind: state.resolveKind,
@@ -405,6 +454,7 @@ export const useGameStore = create<GameStore>()(
         usedQuestionIds: state.usedQuestionIds,
         usedEventIds: state.usedEventIds,
         winners: state.winners,
+        winReason: state.winReason,
       }),
     },
   ),

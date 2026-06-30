@@ -1,10 +1,7 @@
 import { motion } from 'framer-motion'
+import { useGameStore } from '../../game/store'
 import { EcgLine } from '../ui/EcgLine'
 import styles from './Splash.module.css'
-
-type SplashProps = {
-  onStart: () => void
-}
 
 const stagger = {
   animate: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
@@ -19,7 +16,16 @@ const item = {
   },
 }
 
-export function Splash({ onStart }: SplashProps) {
+export function Splash() {
+  const newGame = useGameStore((s) => s.newGame)
+  const continueGame = useGameStore((s) => s.continueGame)
+  const canContinue = useGameStore(
+    (s) => s.gameStarted && s.players.length > 0 && s.winners.length === 0,
+  )
+  const currentPlayer = useGameStore((s) => s.players[s.currentPlayerIndex])
+
+  const handleNewGame = () => newGame()
+
   return (
     <div className={styles.splash}>
       <div className={styles.bg} aria-hidden="true">
@@ -52,15 +58,31 @@ export function Splash({ onStart }: SplashProps) {
           <span className={styles.chip}>Offline PWA</span>
         </motion.div>
 
-        <motion.button
-          type="button"
-          className={styles.cta}
-          variants={item}
-          onClick={onStart}
-          whileTap={{ scale: 0.97 }}
-        >
-          Entrar a la guardia
-        </motion.button>
+        <motion.div className={styles.ctaRow} variants={item}>
+          {canContinue && (
+            <>
+              <motion.button
+                type="button"
+                className={styles.ctaSecondary}
+                onClick={continueGame}
+                whileTap={{ scale: 0.97 }}
+              >
+                ▶ Continuar partida
+              </motion.button>
+              <p className={styles.savedHint}>
+                Turno: {currentPlayer?.name ?? '—'} · Partida guardada en este dispositivo
+              </p>
+            </>
+          )}
+          <motion.button
+            type="button"
+            className={styles.cta}
+            onClick={handleNewGame}
+            whileTap={{ scale: 0.97 }}
+          >
+            {canContinue ? 'Nueva partida' : 'Entrar a la guardia'}
+          </motion.button>
+        </motion.div>
 
         <motion.p className={styles.credit} variants={item}>
           Juego de mesa digital · v1

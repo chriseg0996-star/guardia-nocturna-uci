@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { DEFAULT_PLAYER_NAMES, PLAYER_COLORS } from '../../data/categories'
 import { MAX_PLAYERS, MIN_PLAYERS } from '../../game/engine'
 import { useGameStore } from '../../game/store'
+import { SettingsPanel } from '../Settings/SettingsPanel'
 import { EcgLine } from '../ui/EcgLine'
 import styles from './Setup.module.css'
 
@@ -13,7 +15,10 @@ export function Setup() {
   const setScreen = useGameStore((s) => s.setScreen)
   const setPlayerCount = useGameStore((s) => s.setPlayerCount)
   const setPlayerName = useGameStore((s) => s.setPlayerName)
+  const settings = useGameStore((s) => s.settings)
+  const updateSettings = useGameStore((s) => s.updateSettings)
   const startGame = useGameStore((s) => s.startGame)
+  const [showSettings, setShowSettings] = useState(true)
 
   const canStart = playerCount >= MIN_PLAYERS && playerCount <= MAX_PLAYERS
 
@@ -79,6 +84,23 @@ export function Setup() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className={styles.section} aria-labelledby="settings-heading">
+        <button
+          type="button"
+          className={styles.sectionToggle}
+          onClick={() => setShowSettings((v) => !v)}
+          aria-expanded={showSettings}
+        >
+          <h2 id="settings-heading" className={styles.sectionTitleInline}>
+            Ajustes
+          </h2>
+          <span aria-hidden="true">{showSettings ? '▾' : '▸'}</span>
+        </button>
+        {showSettings && (
+          <SettingsPanel settings={settings} onChange={updateSettings} />
+        )}
       </section>
 
       <section className={styles.section} aria-labelledby="rules-heading">

@@ -13,7 +13,6 @@ const pageVariants = {
 
 export default function App() {
   const screen = useGameStore((s) => s.screen)
-  const setScreen = useGameStore((s) => s.setScreen)
 
   return (
     <div className={styles.app}>
@@ -28,7 +27,7 @@ export default function App() {
             transition={{ duration: 0.28 }}
             style={{ height: '100%' }}
           >
-            <Splash onStart={() => setScreen('setup')} />
+            <Splash />
           </motion.div>
         )}
         {screen === 'setup' && (
