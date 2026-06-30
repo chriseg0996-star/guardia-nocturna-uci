@@ -4,15 +4,15 @@ import { EcgLine } from '../ui/EcgLine'
 import styles from './Splash.module.css'
 
 const stagger = {
-  animate: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
+  animate: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
 }
 
 const item = {
-  initial: { opacity: 0, y: 20 },
+  initial: { opacity: 0, y: 16 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
   },
 }
 
@@ -24,19 +24,19 @@ export function Splash() {
   )
   const currentPlayer = useGameStore((s) => s.players[s.currentPlayerIndex])
 
-  const handleNewGame = () => newGame()
-
   return (
     <div className={styles.splash}>
       <div className={styles.bg} aria-hidden="true">
-        <img src={`${import.meta.env.BASE_URL}assets/tablero.png`} alt="" className={styles.bgImage} />
-        <div className={styles.bgOverlay} />
         <div className={styles.grid} />
       </div>
 
       <motion.div className={styles.content} variants={stagger} initial="initial" animate="animate">
         <motion.div className={styles.ecgWrap} variants={item}>
           <EcgLine />
+        </motion.div>
+
+        <motion.div className={styles.boardPreview} variants={item} aria-hidden="true">
+          <span className={styles.boardPreviewLabel}>28 CASILLAS</span>
         </motion.div>
 
         <motion.span className={styles.badge} variants={item}>
@@ -49,43 +49,38 @@ export function Splash() {
         </motion.h1>
 
         <motion.p className={styles.subtitle} variants={item}>
-          Domina las 8 categorías clínicas. Sobrevive la guardia. Gana el tablero.
+          Juego de mesa digital. Domina 8 categorías clínicas antes que se acaben tus vidas.
         </motion.p>
 
         <motion.div className={styles.features} variants={item}>
           <span className={styles.chip}>2–4 jugadores</span>
           <span className={styles.chip}>Hot-seat</span>
-          <span className={styles.chip}>Offline PWA</span>
+          <span className={styles.chip}>Offline</span>
         </motion.div>
 
         <motion.div className={styles.ctaRow} variants={item}>
           {canContinue && (
             <>
-              <motion.button
-                type="button"
-                className={styles.ctaSecondary}
-                onClick={continueGame}
-                whileTap={{ scale: 0.97 }}
-              >
+              <button type="button" className={styles.ctaSecondary} onClick={continueGame}>
                 ▶ Continuar partida
-              </motion.button>
+              </button>
               <p className={styles.savedHint}>
-                Turno: {currentPlayer?.name ?? '—'} · Partida guardada en este dispositivo
+                Turno: {currentPlayer?.name ?? '—'}
               </p>
             </>
           )}
           <motion.button
             type="button"
             className={styles.cta}
-            onClick={handleNewGame}
-            whileTap={{ scale: 0.97 }}
+            onClick={() => newGame()}
+            whileTap={{ scale: 0.98 }}
           >
             {canContinue ? 'Nueva partida' : 'Entrar a la guardia'}
           </motion.button>
         </motion.div>
 
         <motion.p className={styles.credit} variants={item}>
-          Juego de mesa digital · v1
+          v1 · Guardia Nocturna
         </motion.p>
       </motion.div>
     </div>
