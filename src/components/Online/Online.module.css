@@ -297,6 +297,31 @@
   font-size: 0.85rem;
 }
 
+.reconnectBar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(242, 193, 78, 0.45);
+  background: rgba(242, 193, 78, 0.1);
+  font-size: 0.82rem;
+  color: var(--txt);
+}
+
+.reconnectBtn {
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(242, 193, 78, 0.55);
+  background: rgba(242, 193, 78, 0.15);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
 .connectedInline,
 .disconnectedInline {
   font-family: var(--font-mono);

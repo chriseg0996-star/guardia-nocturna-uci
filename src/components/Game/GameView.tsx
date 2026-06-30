@@ -8,6 +8,7 @@ import { CornerModal } from '../CornerModal/CornerModal'
 import { EventModal } from '../EventModal/EventModal'
 import { QuestionModal } from '../QuestionModal/QuestionModal'
 import { WinModal } from '../WinModal/WinModal'
+import { HostQrFab } from '../Online/HostQrFab'
 import { SettingsModal } from '../Settings/SettingsModal'
 import { computeDiceRoll, useGameStore } from '../../game/store'
 import { useOnlineStore } from '../../online/onlineStore'
@@ -136,6 +137,9 @@ export function GameView({ onlineHost = false }: { onlineHost?: boolean }) {
       ? statusMessage
       : (PHASE_HINT[turnPhase] ?? '')
 
+  const celebratePlayerId =
+    lastFeedback && /sello ganado/i.test(lastFeedback) ? (currentPlayer?.id ?? null) : null
+
   return (
     <div className={styles.game}>
       <header className={styles.topBar}>
@@ -171,7 +175,12 @@ export function GameView({ onlineHost = false }: { onlineHost?: boolean }) {
         {players
           .filter((p) => !p.eliminated)
           .map((p) => (
-            <PlayerPanel key={p.id} player={p} active={p.id === currentPlayer?.id} />
+            <PlayerPanel
+              key={p.id}
+              player={p}
+              active={p.id === currentPlayer?.id}
+              celebrate={p.id === celebratePlayerId}
+            />
           ))}
       </div>
 
@@ -267,6 +276,8 @@ export function GameView({ onlineHost = false }: { onlineHost?: boolean }) {
           />
         )}
       </AnimatePresence>
+
+      {onlineHost && <HostQrFab />}
     </div>
   )
 }

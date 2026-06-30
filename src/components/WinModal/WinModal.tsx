@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion'
-import { CATEGORIES } from '../../data/categories'
+import { CATEGORIES, getCategory } from '../../data/categories'
 import { describeWinReason, type WinReason } from '../../game/win'
 import type { Player } from '../../game/engine'
+import { useGameStore } from '../../game/store'
+import { weakestCategory } from '../../game/sessionStats'
 import styles from './WinModal.module.css'
 
 type WinModalProps = {
@@ -11,6 +13,21 @@ type WinModalProps = {
 }
 
 export function WinModal({ winners, reason, onExit }: WinModalProps) {
+  const players = useGameStore((s) => s.players)
+  const onlineMode = useGameStore((s) => s.onlineMode)
+  const sessionStats = useGameStore((s) => s.sessionStats)
+  const onlineSessionStats = useGameStore((s) => s.onlineSessionStats)
+
+  const statsMap = onlineMode ? onlineSessionStats : sessionStats
+  const statRows = players
+    .map((p) => {
+      const s = statsMap[p.id]
+      if (!s || (s.correct === 0 && s.wrong === 0)) return null
+      const weak = weakestCategory(s.categoryMisses, (id) => getCategory(id)?.shortName)
+      return { name: p.name, correct: s.correct, wrong: s.wrong, weak }
+    })
+    .filter(Boolean) as { name: string; correct: number; wrong: number; weak: string | null }[]
+
   const label = winners.map((w) => w.name).join(' · ')
   const subtitle = reason ? describeWinReason(reason) : 'Fin de la guardia'
 
@@ -49,6 +66,23 @@ export function WinModal({ winners, reason, onExit }: WinModalProps) {
 
         {reason === 'uci_master' && (
           <p className={styles.stat}>{stampCount}/8 categorías dominadas</p>
+        )}
+
+        {statRows.length > 0 && (
+          <div className={styles.statsBlock}>
+            <p className={styles.statsTitle}>Resumen de la guardia</p>
+            <ul className={styles.statsList}>
+              {statRows.map((row) => (
+                <li key={row.name}>
+                  <strong>{row.name}</strong>
+                  <span>
+                    {row.correct}✓ · {row.wrong}✗
+                    {row.weak ? ` · repasar ${row.weak}` : ''}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <button type="button" className={styles.btnPrimary} onClick={onExit}>

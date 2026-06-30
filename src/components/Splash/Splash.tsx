@@ -1,6 +1,8 @@
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useGameStore } from '../../game/store'
 import { useOnlineStore } from '../../online/onlineStore'
+import { RulesModal } from '../Rules/RulesModal'
 import styles from './Splash.module.css'
 
 const STAMPS = ['#5b8def', '#34d3ee', '#a371f7', '#f2c14e', '#f08a3c', '#ff5470', '#3fb950', '#ffd166']
@@ -21,12 +23,14 @@ const item = {
 export function Splash() {
   const newGame = useGameStore((s) => s.newGame)
   const continueGame = useGameStore((s) => s.continueGame)
+  const setScreen = useGameStore((s) => s.setScreen)
   const canContinue = useGameStore(
     (s) => s.gameStarted && s.players.length > 0 && s.winners.length === 0,
   )
   const currentPlayer = useGameStore((s) => s.players[s.currentPlayerIndex])
   const createRoom = useOnlineStore((s) => s.createRoom)
   const openJoin = () => useOnlineStore.setState({ screen: 'join' })
+  const [rulesOpen, setRulesOpen] = useState(false)
 
   return (
     <div className={styles.splash}>
@@ -92,7 +96,20 @@ export function Splash() {
             </button>
           </article>
         </motion.div>
+
+        <motion.footer className={styles.footer} variants={item}>
+          <button type="button" className={styles.footerBtn} onClick={() => setRulesOpen(true)}>
+            Cómo jugar
+          </button>
+          <button type="button" className={styles.footerBtn} onClick={() => setScreen('quiz')}>
+            Modo repaso
+          </button>
+        </motion.footer>
       </motion.div>
+
+      <AnimatePresence>
+        {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
+      </AnimatePresence>
     </div>
   )
 }

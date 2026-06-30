@@ -82,6 +82,46 @@
   margin-bottom: 14px;
 }
 
+.statsBlock {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: rgba(7, 13, 24, 0.45);
+  text-align: left;
+}
+
+.statsTitle {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cy);
+  margin-bottom: 8px;
+}
+
+.statsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.statsList li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.72rem;
+  color: var(--fd);
+}
+
+.statsList strong {
+  color: var(--txt);
+  font-size: 0.78rem;
+}
+
 .btnPrimary {
   width: 100%;
   min-height: calc(var(--touch-min) + 4px);

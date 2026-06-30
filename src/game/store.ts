@@ -31,8 +31,10 @@ import {
   resolveWinResult,
   type WinReason,
 } from './win'
+import { emptyPlayerStats, recordAnswer, type PlayerSessionStats } from './sessionStats'
+import type { SessionStatsWire } from '../../shared/protocol'
 
-export type AppScreen = 'splash' | 'setup' | 'game'
+export type AppScreen = 'splash' | 'setup' | 'game' | 'quiz'
 
 export type OnlineMode = false | 'host' | 'player'
 
@@ -69,6 +71,8 @@ type GameStore = {
   usedEventIds: number[]
   lastFeedback: string | null
   statusMessage: string | null
+  sessionStats: Record<number, PlayerSessionStats>
+  onlineSessionStats: Record<number, PlayerSessionStats>
 
   setScreen: (screen: AppScreen) => void
   setPlayerCount: (count: number) => void
@@ -119,6 +123,21 @@ function nextActivePlayerIndex(players: Player[], from: number): number {
 
 function detectWin(players: Player[], settings: GameSettings) {
   return resolveWinResult(players, settings)
+}
+
+function normalizeSessionStats(
+  wire: Record<number, SessionStatsWire> | undefined,
+): Record<number, PlayerSessionStats> {
+  if (!wire) return {}
+  const out: Record<number, PlayerSessionStats> = {}
+  for (const [id, s] of Object.entries(wire)) {
+    out[Number(id)] = {
+      correct: s.correct,
+      wrong: s.wrong,
+      categoryMisses: { ...(s.categoryMisses ?? {}) },
+    }
+  }
+  return out
 }
 
 const initialTurnState = {
@@ -184,6 +203,8 @@ export const useGameStore = create<GameStore>()(
       currentPlayerIndex: 0,
       gameStarted: false,
       onlineMode: false,
+      sessionStats: {},
+      onlineSessionStats: {},
       ...initialTurnState,
 
       setScreen: (screen) => set({ screen }),
@@ -213,6 +234,8 @@ export const useGameStore = create<GameStore>()(
           players: buildPlayers(playerCount, playerNames),
           board: generateBoard(),
           currentPlayerIndex: 0,
+          sessionStats: {},
+          onlineSessionStats: {},
           ...initialTurnState,
         })
       },
@@ -236,6 +259,8 @@ export const useGameStore = create<GameStore>()(
           settings: { ...game.settings },
           board: generateBoard(),
           currentPlayerIndex: game.currentPlayerIndex,
+          sessionStats: {},
+          onlineSessionStats: {},
           ...initialTurnState,
         })
       },
@@ -259,6 +284,8 @@ export const useGameStore = create<GameStore>()(
           settings: { ...game.settings },
           board: generateBoard(),
           currentPlayerIndex: game.currentPlayerIndex,
+          sessionStats: {},
+          onlineSessionStats: {},
           ...initialTurnState,
         })
       },
@@ -297,6 +324,7 @@ export const useGameStore = create<GameStore>()(
           winners,
           winReason: sync.turnPhase === 'ended' ? sync.winReason : null,
           onlineMode: sync.yourPlayerId === null ? 'host' : 'player',
+          onlineSessionStats: normalizeSessionStats(sync.sessionStats),
         })
       },
 
@@ -314,6 +342,8 @@ export const useGameStore = create<GameStore>()(
           onlineMode: false,
           players: [],
           currentPlayerIndex: 0,
+          sessionStats: {},
+          onlineSessionStats: {},
           ...initialTurnState,
         })
       },
@@ -479,9 +509,14 @@ export const useGameStore = create<GameStore>()(
 
         const nextPlayers = players.map((p) => (p.id === player.id ? updated : p))
         const elim = eliminationMessage(player, updated)
+        const prevStats = get().sessionStats[player.id] ?? emptyPlayerStats()
         set({
           players: nextPlayers,
           lastFeedback: mergeFeedback(feedback, elim),
+          sessionStats: {
+            ...get().sessionStats,
+            [player.id]: recordAnswer(prevStats, correct, activeCategoryId),
+          },
         })
         endTurnState(get, set)
       },

@@ -7,14 +7,15 @@ import styles from './PlayerPanel.module.css'
 type PlayerPanelProps = {
   player: Player
   active: boolean
+  celebrate?: boolean
 }
 
-export function PlayerPanel({ player, active }: PlayerPanelProps) {
+export function PlayerPanel({ player, active, celebrate = false }: PlayerPanelProps) {
   const stampCount = player.stamps.filter(Boolean).length
 
   return (
     <div
-      className={`${styles.panel} ${active ? styles.active : ''}`}
+      className={`${styles.panel} ${active ? styles.active : ''} ${celebrate ? styles.celebrate : ''}`}
       style={{ '--accent': player.color } as CSSProperties}
     >
       <div className={styles.topRow}>

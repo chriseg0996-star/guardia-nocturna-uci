@@ -94,11 +94,21 @@ export function joinRoom(
 ): { room: Room; lobby: LobbyStateWire; playerId: number } | { error: 'NOT_FOUND' | 'FULL' | 'STARTED' | 'NAME_TAKEN' } {
   const room = rooms.get(pin)
   if (!room) return { error: 'NOT_FOUND' }
-  if (room.status === 'playing') return { error: 'STARTED' }
   if (socketId === room.hostSocketId) return { error: 'NOT_FOUND' }
-  if (room.players.length >= MAX_PLAYERS) return { error: 'FULL' }
 
   const trimmed = name.trim().slice(0, 24) || 'Residente'
+
+  if (room.status === 'playing') {
+    const existing = room.players.find((p) => p.name.toLowerCase() === trimmed.toLowerCase())
+    if (!existing) return { error: 'STARTED' }
+    existing.socketId = socketId
+    existing.connected = true
+    socketToPin.set(socketId, pin)
+    return { room, lobby: toLobbyState(room), playerId: existing.id }
+  }
+
+  if (room.players.length >= MAX_PLAYERS) return { error: 'FULL' }
+
   const nameTaken = room.players.some(
     (p) => p.name.toLowerCase() === trimmed.toLowerCase() && p.socketId !== socketId,
   )
@@ -123,6 +133,32 @@ export function joinRoom(
   room.players.push(player)
   socketToPin.set(socketId, pin)
   return { room, lobby: toLobbyState(room), playerId: id }
+}
+
+export function markPlayerDisconnected(socketId: string): { pin: string; lobby: LobbyStateWire } | null {
+  const pin = socketToPin.get(socketId)
+  if (!pin) return null
+  const room = rooms.get(pin)
+  if (!room) {
+    socketToPin.delete(socketId)
+    return null
+  }
+
+  if (socketId === room.hostSocketId) return null
+
+  const player = room.players.find((p) => p.socketId === socketId)
+  if (!player) {
+    socketToPin.delete(socketId)
+    return null
+  }
+
+  if (room.status === 'playing') {
+    player.connected = false
+    socketToPin.delete(socketId)
+    return { pin, lobby: toLobbyState(room) }
+  }
+
+  return null
 }
 
 export function startRoom(
@@ -177,10 +213,12 @@ export function leaveRoom(socketId: string): { pin: string; lobby: LobbyStateWir
   }
 
   room.players = room.players.filter((p) => p.socketId !== socketId)
-  room.players.forEach((p, i) => {
-    p.id = i
-    p.color = PLAYER_COLORS[i]!
-  })
+  if (room.status === 'lobby') {
+    room.players.forEach((p, i) => {
+      p.id = i
+      p.color = PLAYER_COLORS[i]!
+    })
+  }
   socketToPin.delete(socketId)
 
   if (room.players.length === 0 && room.status === 'lobby') {

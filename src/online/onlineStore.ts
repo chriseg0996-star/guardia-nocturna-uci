@@ -19,6 +19,38 @@ export type OnlineScreen =
   | 'host-game'
   | 'player-game'
 
+const SESSION_KEY = 'gnuc-online-session'
+
+type SavedSession = { pin: string; name: string }
+
+function saveSession(pin: string, name: string) {
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ pin, name }))
+  } catch {
+    /* ignore */
+  }
+}
+
+function loadSession(): SavedSession | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as SavedSession
+    if (parsed.pin?.length === 6 && parsed.name) return parsed
+  } catch {
+    /* ignore */
+  }
+  return null
+}
+
+function clearSession() {
+  try {
+    sessionStorage.removeItem(SESSION_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
 type OnlineStore = {
   screen: OnlineScreen
   connected: boolean
@@ -28,6 +60,7 @@ type OnlineStore = {
   sync: GameSyncWire | null
   yourPlayerId: number | null
   isHost: boolean
+  savedSession: SavedSession | null
   privateQuestion: QuestionPayloadWire | null
   privateEvent: EventPayloadWire | null
   privateCorner: CornerPayloadWire | null
@@ -35,6 +68,7 @@ type OnlineStore = {
   reset: () => void
   createRoom: () => Promise<void>
   joinRoom: (pin: string, name: string) => Promise<void>
+  reconnect: () => Promise<void>
   startGame: () => void
   leaveRoom: () => void
   rollDice: () => void
@@ -53,6 +87,7 @@ const initial = {
   sync: null as GameSyncWire | null,
   yourPlayerId: null as number | null,
   isHost: false,
+  savedSession: loadSession(),
   privateQuestion: null as QuestionPayloadWire | null,
   privateEvent: null as EventPayloadWire | null,
   privateCorner: null as CornerPayloadWire | null,
@@ -74,7 +109,8 @@ export const useOnlineStore = create<OnlineStore>((set, get) => ({
   reset: () => {
     disconnectSocket()
     listenersBound = false
-    set({ ...initial })
+    clearSession()
+    set({ ...initial, savedSession: null })
   },
 
   bindSocketEvents: () => {
@@ -96,11 +132,17 @@ export const useOnlineStore = create<OnlineStore>((set, get) => ({
     })
 
     socket.on('room:joined', ({ lobby, yourPlayerId }) => {
+      const name =
+        lobby.players.find((p) => p.id === yourPlayerId)?.name ??
+        loadSession()?.name ??
+        ''
+      if (name) saveSession(lobby.pin, name)
       set({
-        screen: 'player-lobby',
+        screen: lobby.status === 'playing' ? 'player-game' : 'player-lobby',
         lobby,
         yourPlayerId,
         isHost: false,
+        savedSession: { pin: lobby.pin, name },
         error: null,
       })
     })
@@ -165,10 +207,18 @@ export const useOnlineStore = create<OnlineStore>((set, get) => ({
     set({ error: null })
     try {
       await connectSocket()
+      saveSession(pin.trim(), name.trim())
+      set({ savedSession: { pin: pin.trim(), name: name.trim() } })
       getSocket().emit('room:join', { pin: pin.trim(), name })
     } catch {
       set({ error: 'No se pudo conectar al servidor. ¿Está encendido?' })
     }
+  },
+
+  reconnect: async () => {
+    const saved = get().savedSession ?? loadSession()
+    if (!saved) return
+    await get().joinRoom(saved.pin, saved.name)
   },
 
   startGame: () => {
@@ -205,7 +255,7 @@ export function onlineErrorLabel(code: RoomErrorCode): string {
   const labels: Record<RoomErrorCode, string> = {
     NOT_FOUND: 'Sala no encontrada',
     FULL: 'Sala llena',
-    STARTED: 'Partida en curso',
+    STARTED: 'Partida en curso — usa el mismo nombre para volver',
     NAME_TAKEN: 'Nombre ocupado',
     NOT_HOST: 'Solo el presentador',
     INSUFFICIENT_PLAYERS: 'Faltan jugadores',

@@ -12,6 +12,7 @@ import {
   getRoomBySocket,
   joinRoom,
   leaveRoom,
+  markPlayerDisconnected,
   startRoom,
 } from './rooms.js'
 import {
@@ -109,6 +110,15 @@ io.on('connection', (socket) => {
     socket.join(result.room.pin)
     socket.emit('room:joined', { lobby: result.lobby, yourPlayerId: result.playerId })
     socket.to(result.room.pin).emit('room:updated', result.lobby)
+
+    if (result.room.status === 'playing') {
+      const session = getGameSession(result.room.pin)
+      if (session) {
+        socket.emit('game:started', session.buildGameStart(socket.id))
+        session.resendPrivateIfNeeded(socket.id)
+        broadcastGameSync(result.room.pin)
+      }
+    }
   })
 
   socket.on('room:start', () => {
@@ -185,6 +195,14 @@ io.on('connection', (socket) => {
 function handleDisconnect(socketId: string, isDisconnect: boolean) {
   const room = getRoomBySocket(socketId)
   const pin = room?.pin
+
+  const marked = markPlayerDisconnected(socketId)
+  if (marked) {
+    io.to(marked.pin).emit('room:updated', marked.lobby)
+    broadcastGameSync(marked.pin)
+    return
+  }
+
   const result = leaveRoom(socketId)
   if (!result) return
 

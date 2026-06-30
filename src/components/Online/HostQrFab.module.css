@@ -1,0 +1,44 @@
+.fab {
+  position: fixed;
+  right: 12px;
+  bottom: calc(var(--safe-bottom) + 88px);
+  z-index: 50;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(242, 193, 78, 0.5);
+  background: rgba(19, 32, 58, 0.92);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.pop {
+  position: fixed;
+  right: 12px;
+  bottom: calc(var(--safe-bottom) + 148px);
+  z-index: 50;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: rgba(7, 13, 24, 0.95);
+  text-align: center;
+  box-shadow: var(--shadow-panel);
+}
+
+.pin {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+}
+
+.hint {
+  margin-top: 8px;
+  font-size: 0.68rem;
+  color: var(--fd);
+}

@@ -91,3 +91,23 @@
   border-color: var(--cat-color);
   box-shadow: 0 0 6px color-mix(in srgb, var(--cat-color) 50%, transparent);
 }
+
+.celebrate .stampOn {
+  animation: stampPop 0.65s ease;
+}
+
+@keyframes stampPop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebrate .stampOn {
+    animation: none;
+  }
+}

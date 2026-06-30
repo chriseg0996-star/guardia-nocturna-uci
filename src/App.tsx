@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import styles from './App.module.css'
 import { GameView } from './components/Game/GameView'
 import { OnlineFlow } from './components/Online/OnlineFlow'
+import { QuizView } from './components/Quiz/QuizView'
 import { Setup } from './components/Setup/Setup'
 import { Splash } from './components/Splash/Splash'
 import { useGameStore } from './game/store'
@@ -17,6 +18,7 @@ const pageVariants = {
 
 export default function App() {
   const screen = useGameStore((s) => s.screen)
+  const setScreen = useGameStore((s) => s.setScreen)
   const onlineScreen = useOnlineStore((s) => s.screen)
 
   useEffect(() => {
@@ -76,6 +78,19 @@ export default function App() {
             transition={{ duration: 0.28 }}
           >
             <GameView />
+          </motion.div>
+        )}
+        {screen === 'quiz' && (
+          <motion.div
+            key="quiz"
+            className={styles.screen}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ duration: 0.28 }}
+          >
+            <QuizView onExit={() => setScreen('splash')} />
           </motion.div>
         )}
       </AnimatePresence>

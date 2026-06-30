@@ -57,6 +57,12 @@ export type ResolveKindWire = 'question' | 'event' | 'corner' | null
 
 export type CornerKeyWire = 'go' | 'descanso' | 'codigo_azul' | 'guardia'
 
+export type SessionStatsWire = {
+  correct: number
+  wrong: number
+  categoryMisses?: Record<number, number>
+}
+
 export type QuestionWire = {
   q: string
   options?: string[]
@@ -86,6 +92,7 @@ export type GameSyncWire = {
   winReason: 'uci_master' | 'survival' | null
   yourPlayerId: number | null
   statusMessage: string | null
+  sessionStats: Record<number, SessionStatsWire>
 }
 
 export type QuestionPayloadWire = {

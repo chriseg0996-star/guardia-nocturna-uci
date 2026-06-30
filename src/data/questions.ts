@@ -27,6 +27,18 @@ export const QUESTIONS: Record<number, Card[]> = {
       options: ['Shunt anatómico masivo', 'Baja PIO₂ ambiental', 'Solo hipercapnia', 'Methemoglobinemia'],
       correct: 1,
     },
+    {
+      q: '¿Cuántos lóbulos tiene el pulmón derecho?',
+      a: 'Tres (superior, medio e inferior); el izquierdo tiene dos.',
+      options: ['Dos', 'Tres', 'Cuatro', 'Cinco'],
+      correct: 1,
+    },
+    {
+      q: 'En bipedestación, la zona pulmonar con mayor ventilación relativa es:',
+      a: 'El vértice (apical), por efecto gravitacional; la base recibe más perfusión.',
+      options: ['Base pulmonar', 'Vértice pulmonar', 'Hilio', 'Segmento medial del medio'],
+      correct: 1,
+    },
   ],
   2: [
     {
@@ -68,6 +80,18 @@ export const QUESTIONS: Record<number, Card[]> = {
       ],
       correct: 1,
     },
+    {
+      q: 'Curva capnográfica en "pez sierra" durante VM controlada sugiere:',
+      a: 'Movimientos respiratorios espontáneos sobre ventilación controlada o mala sincronía paciente-ventilador.',
+      options: ['Intubación esofágica', 'Fighting / desincronía', 'ROSC inmediato', 'Apnea central'],
+      correct: 1,
+    },
+    {
+      q: 'En embolia pulmonar aguda, el ETCO₂ típicamente:',
+      a: 'Disminuye por aumento del espacio muerto y menor eliminación alveolar de CO₂.',
+      options: ['Aumenta de forma brusca', 'Disminuye (espacio muerto ↑)', 'Permanece invariable', 'Iguala siempre la PaCO₂'],
+      correct: 1,
+    },
   ],
   3: [
     {
@@ -102,6 +126,18 @@ export const QUESTIONS: Record<number, Card[]> = {
         'Acidosis respiratoria crónica',
         'Alcalosis metabólica por exceso de HCO₃⁻',
       ],
+      correct: 1,
+    },
+    {
+      q: 'El anión gap sérico normal aproximado es:',
+      a: '8–12 mEq/L (Na⁺ − [Cl⁻ + HCO₃⁻]); elevado indica ácidos no medidos acumulados.',
+      options: ['0–2 mEq/L', '8–12 mEq/L', '20–25 mEq/L', '35–40 mEq/L'],
+      correct: 1,
+    },
+    {
+      q: 'Acidosis metabólica con anión gap normal (hiperclorémica) sugiere frecuentemente:',
+      a: 'Pérdida de bicarbonato (diarrea) o acidosis tubular renal, no acumulación de lactato.',
+      options: ['Cetoacidosis diabética', 'Diarrea / RTA con gap normal', 'Intoxicación por metanol', 'Shock séptico con lactato alto'],
       correct: 1,
     },
   ],
@@ -150,6 +186,18 @@ export const QUESTIONS: Record<number, Card[]> = {
       ],
       correct: 1,
     },
+    {
+      q: 'Según la ley de Henry, la solubilidad del O₂ en sangre aumenta cuando:',
+      a: 'Disminuye la temperatura; relevante en hipotermia (mayor O₂ disuelto a igual PO₂).',
+      options: ['Aumenta la temperatura', 'Disminuye la temperatura', 'Sube la PEEP', 'Hay hipercapnia'],
+      correct: 1,
+    },
+    {
+      q: 'La ecuación del alvéolo relaciona la PAO₂ con:',
+      a: 'FiO₂, presión barométrica, presión de vapor de agua y PaCO₂ alveolar.',
+      options: ['Solo hematocrito', 'FiO₂, PB, PH₂O y PaCO₂', 'Solo PEEP', 'Gasto cardíaco únicamente'],
+      correct: 1,
+    },
   ],
   5: [
     {
@@ -184,6 +232,18 @@ export const QUESTIONS: Record<number, Card[]> = {
         'Indicación de extubar ya',
         'Normalidad mecánica',
       ],
+      correct: 1,
+    },
+    {
+      q: 'La resistencia de vía aérea en VM volumen controlado se estima como:',
+      a: '(Ppico − Pplat) / flujo inspiratorio (con flujo constante).',
+      options: ['Pplat − PEEP', '(Ppico − Pplat) / flujo', 'Vt × compliance', 'PEEP / FiO₂'],
+      correct: 1,
+    },
+    {
+      q: 'Maniobra de reclutamiento alveolar en SDRA busca principalmente:',
+      a: 'Reabrir alvéolos colapsados, mejorando compliance y oxigenación (vigilar presión arterial).',
+      options: ['Aumentar resistencia', 'Reclutar alvéolos colapsados', 'Eliminar PEEP', 'Reducir Vt a 2 ml/kg rutinario'],
       correct: 1,
     },
   ],
@@ -227,6 +287,18 @@ export const QUESTIONS: Record<number, Card[]> = {
       ],
       correct: 1,
     },
+    {
+      q: 'El contenido arterial de O₂ (CaO₂) depende principalmente de:',
+      a: 'Hemoglobina, saturación y PO₂ disuelta (CaO₂ ≈ 1.34×Hb×SaO₂ + 0.003×PaO₂).',
+      options: ['Solo PaO₂', 'Hb, SaO₂ y PaO₂', 'Solo FiO₂', 'PEEP aplicada'],
+      correct: 1,
+    },
+    {
+      q: 'Para calcular fracción de shunt (Qs/Qt) clásica se requiere:',
+      a: 'Contenido de O₂ en sangre venosa mixta, arterial y capilar pulmonar ideal (CcO₂).',
+      options: ['Solo PaCO₂', 'CvO₂, CaO₂ y CcO₂', 'Solo lactato', 'Presión venosa central'],
+      correct: 1,
+    },
   ],
   7: [
     {
@@ -263,6 +335,18 @@ export const QUESTIONS: Record<number, Card[]> = {
       ],
       correct: 1,
     },
+    {
+      q: 'Paciente en VM >48 h con fiebre e infiltrado nuevo. Sospecha de VAP. Muestra microbiológica razonable:',
+      a: 'Cultivo cuantitativo de aspirado traqueal o BAL según protocolo local, sin retrasar ATB si inestable.',
+      options: ['Solo radiografía sin cultivo', 'AT o BAL cuantitativo según protocolo', 'Cultivo de orina', 'Alta inmediata a planta'],
+      correct: 1,
+    },
+    {
+      q: 'Hemorragia digestiva alta con inestabilidad en UCI. Tras reanimación, conducta endoscópica:',
+      a: 'Endoscopia precoz (idealmente <24 h) en pacientes de alto riesgo una vez estabilizado.',
+      options: ['Endoscopia a los 7 días siempre', 'Endoscopia precoz tras estabilizar', 'Solo IBP sin endoscopia', 'Cirugía de primera línea rutinaria'],
+      correct: 1,
+    },
   ],
   8: [
     {
@@ -297,6 +381,18 @@ export const QUESTIONS: Record<number, Card[]> = {
       q: 'Criterio de Berlín para SDRA leve (P/F con PEEP ≥5) es:',
       a: '200 < PaO₂/FiO₂ ≤ 300 mmHg.',
       options: ['P/F > 400', '200 < P/F ≤ 300', '100 < P/F ≤ 200', 'P/F ≤ 100'],
+      correct: 1,
+    },
+    {
+      q: 'El bundle ABCDEF en UCI prioriza:',
+      a: 'Airway/Breathing, Choice of sedation, Delirium, Early mobility y Family engagement.',
+      options: ['Sedación profunda permanente', 'ABCDEF (A–F integrados)', 'Solo nutrición enteral', 'Extubación inmediata universal'],
+      correct: 1,
+    },
+    {
+      q: 'Una prueba de respiración espontánea (SBT) exitosa típicamente incluye:',
+      a: 'T-tubo o PSV baja (~5–8 cmH₂O) con PEEP similar a basal, durante 30–120 minutos.',
+      options: ['PS 20 cmH₂O por 8 h', 'PSV baja o T-tubo 30–120 min', 'FiO₂ 21% con PEEP 15 sola', 'Extubación sin prueba previa'],
       correct: 1,
     },
   ],

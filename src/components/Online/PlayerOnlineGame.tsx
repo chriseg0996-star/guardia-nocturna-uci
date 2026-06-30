@@ -1,8 +1,10 @@
 import { AnimatePresence } from 'framer-motion'
 import type { CSSProperties } from 'react'
+import { useEffect, useRef } from 'react'
 import type { Card } from '../../data/types'
 import { useGameStore } from '../../game/store'
 import { useOnlineStore } from '../../online/onlineStore'
+import { alertYourTurn } from '../../utils/turnAlert'
 import { CornerModal } from '../CornerModal/CornerModal'
 import { Dice } from '../Dice/Dice'
 import { EventModal } from '../EventModal/EventModal'
@@ -18,6 +20,8 @@ export function PlayerOnlineGame() {
   const game = useOnlineStore((s) => s.game)
   const yourPlayerId = useOnlineStore((s) => s.yourPlayerId)
   const error = useOnlineStore((s) => s.error)
+  const connected = useOnlineStore((s) => s.connected)
+  const reconnect = useOnlineStore((s) => s.reconnect)
   const rollDice = useOnlineStore((s) => s.rollDice)
   const submitAnswer = useOnlineStore((s) => s.submitAnswer)
   const dismissEvent = useOnlineStore((s) => s.dismissEvent)
@@ -49,15 +53,34 @@ export function PlayerOnlineGame() {
   const canRoll = isYourTurn
   const youWon = winners.some((w) => w.id === yourPlayerId)
 
+  const wasYourTurn = useRef(false)
+  useEffect(() => {
+    if (isYourTurn && !wasYourTurn.current) {
+      alertYourTurn(settings.soundEnabled)
+    }
+    wasYourTurn.current = isYourTurn
+  }, [isYourTurn, settings.soundEnabled])
+
   return (
     <div className={styles.online}>
       <div className={styles.scroll}>
         <div className={styles.topBar}>
-          <p className={styles.connected}>● PIN {game.pin}</p>
+          <p className={connected ? styles.connectedInline : styles.disconnectedInline}>
+            {connected ? `● PIN ${game.pin}` : '○ Sin conexión'}
+          </p>
           <button type="button" className={styles.back} onClick={leaveRoom}>
             Salir
           </button>
         </div>
+
+        {!connected && (
+          <div className={styles.reconnectBar}>
+            <p>Se perdió la conexión con el servidor.</p>
+            <button type="button" className={styles.reconnectBtn} onClick={() => void reconnect()}>
+              Reconectar
+            </button>
+          </div>
+        )}
 
         {error && <p className={styles.errorBanner}>{error}</p>}
 

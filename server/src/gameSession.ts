@@ -73,6 +73,7 @@ export class OnlineGameSession {
   winReason: WinReason | null = null
   lastFeedback: string | null = null
   statusMessage: string | null = null
+  sessionStats: Record<number, { correct: number; wrong: number; categoryMisses: Record<number, number> }> = {}
 
   private timers: ReturnType<typeof setTimeout>[] = []
   private stepInterval: ReturnType<typeof setInterval> | null = null
@@ -154,7 +155,43 @@ export class OnlineGameSession {
       winReason: this.winReason,
       yourPlayerId: isHost ? null : (lobbyPlayer?.id ?? null),
       statusMessage,
+      sessionStats: { ...this.sessionStats },
     }
+  }
+
+  buildGameStart(forSocketId: string) {
+    const isHost = forSocketId === this.room.hostSocketId
+    const lobbyPlayer = this.room.players.find((p) => p.socketId === forSocketId)
+    return {
+      pin: this.room.pin,
+      players: this.players.map((p) => this.toPlayerWire(p)),
+      settings: { ...this.settings },
+      currentPlayerIndex: this.currentPlayerIndex,
+      yourPlayerId: isHost ? null : (lobbyPlayer?.id ?? null),
+    }
+  }
+
+  resendPrivateIfNeeded(socketId: string) {
+    if (this.turnPhase !== 'resolving') return
+    if (socketId !== this.currentPlayerSocket()) return
+    if (this.resolveKind === 'question' && this.activeQuestion && this.activeCategoryId !== null) {
+      this.cb.sendQuestion(socketId, this.activeCategoryId, this.activeQuestion, this.lapMessage)
+    } else if (this.resolveKind === 'event' && this.activeEvent) {
+      this.cb.sendEvent(socketId, this.activeEvent, this.lapMessage)
+    } else if (this.resolveKind === 'corner' && this.cornerKey) {
+      this.cb.sendCorner(socketId, this.cornerKey, this.lapMessage)
+    }
+  }
+
+  private recordStat(playerId: number, correct: boolean, categoryId?: number) {
+    const cur = this.sessionStats[playerId] ?? { correct: 0, wrong: 0, categoryMisses: {} }
+    const categoryMisses = { ...cur.categoryMisses }
+    if (!correct && categoryId !== undefined) {
+      categoryMisses[categoryId] = (categoryMisses[categoryId] ?? 0) + 1
+    }
+    this.sessionStats[playerId] = correct
+      ? { correct: cur.correct + 1, wrong: cur.wrong, categoryMisses }
+      : { correct: cur.correct, wrong: cur.wrong + 1, categoryMisses }
   }
 
   broadcast() {
@@ -298,6 +335,7 @@ export class OnlineGameSession {
         : '✗ Incorrecto — −1 vida'
 
     this.players = this.players.map((p) => (p.id === player.id ? updated : p))
+    this.recordStat(player.id, correct, this.activeCategoryId)
     this.lastFeedback = mergeFeedback(feedback, eliminationMessage(player, updated))
     this.clearResolve()
     this.endTurn()
