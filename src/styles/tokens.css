@@ -1,0 +1,42 @@
+:root {
+  /* SONOCRÍTICO dark palette */
+  --bg: #070d18;
+  --panel: #13203a;
+  --line: #26405f;
+  --txt: #e8f0fb;
+  --fd: #9fb3d1;
+  --cy: #34d3ee;
+  --g: #3fb950;
+  --r: #ff5470;
+  --gold: #f2c14e;
+
+  /* Player colors */
+  --p1: #3da9fc;
+  --p2: #f08a3c;
+  --p3: #3fb950;
+  --p4: #a371f7;
+
+  /* Typography */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Layout */
+  --touch-min: 44px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 150ms;
+  --dur-normal: 280ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-normal: 0ms;
+  }
+}
